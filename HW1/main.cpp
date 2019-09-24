@@ -19,10 +19,6 @@
 #endif
 
 /*
-    Before parsing, use only one whitespace instead of continued whitespace to regularize the input.
-    
-    This does not change the result.
-
     //////////// e is a null symbol ////////////
 
     <whitespaces> ::= <whitespace>*                     whitespaces
@@ -69,10 +65,17 @@ namespace NONAME_NAMESPACE {
         virtual void rearrange() = 0;
 
         void dfs(std::ofstream &ofs) {
-            ofs << data.substr(pos, length) << '\n';
+            ofs << data.substr(pos, length);
             for(auto &&p : children) {
                 p->dfs(ofs);
             }
+        }
+
+        void assign(std::unique_ptr<Node> &&node) noexcept {
+            data = node->data;
+            pos = node->pos;
+            length = node->length;
+            children.swap(node->children);
         }
     };
 
@@ -153,23 +156,6 @@ DEBUG("parse", "D");
 
         void rearrange() {
 DEBUG("rearrange", "D");
-            if(is_leaf()) return;
-
-            std::vector<std::unique_ptr<Node> > temp;
-            temp.reserve(children.size());
-
-            for(auto &&p : children) {
-                p->rearrange();
-                temp.emplace_back(std::move(p));
-            }
-
-            children.clear();
-            children.reserve(1);
-
-            children.emplace_back(std::move(temp[0]));
-            for(auto &&p : temp[1]->children) {
-                children.emplace_back(std::move(p));
-            }
         }
     };
 
@@ -193,22 +179,7 @@ DEBUG("parse", "digits");
 
         void rearrange() {
 DEBUG("rearrange", "digits");
-
-            std::vector<std::unique_ptr<Node> > temp;
-            temp.reserve(children.size());
-
-            for(auto &&p : children) {
-                p->rearrange();
-                temp.emplace_back(std::move(p));
-            }
-
             children.clear();
-            children.reserve(1);
-
-            children.emplace_back(std::move(temp[0]));
-            for(auto &&p : temp[1]->children) {
-                children.emplace_back(std::move(p));
-            }
         }
     };
 
@@ -245,21 +216,26 @@ DEBUG("parse", "F");
     /// or<digits, identifier>
 
         /// digits
-            if(data[cur_pos] >= '0' && data[cur_pos] <= '9') {
+            if(cur_pos < data.length() && (data[cur_pos] >= '0' && data[cur_pos] <= '9')) {
                 children.reserve(1);
                 children.emplace_back(std::make_unique<digits>(data, cur_pos));
                 cur_pos = children[0]->parse();
             }
         /// identifier
-            else if((data[cur_pos] >= 'a' && data[cur_pos] <= 'z') || (data[cur_pos] >= 'A' && data[cur_pos] <= 'Z')) {
+            else if(cur_pos < data.length() && ((data[cur_pos] >= 'a' && data[cur_pos] <= 'z') || (data[cur_pos] >= 'A' && data[cur_pos] <= 'Z'))) {
                 children.reserve(1);
                 children.emplace_back(std::make_unique<identifier>(data, cur_pos));
                 cur_pos = children[0]->parse();
             }
         /// or<> == false
+            else if(cur_pos >= data.length()) {
+                std::stringstream ss;
+                ss << "At position " << cur_pos << ": expected F, found EOL.";
+                throw std::exception(ss.str().c_str());
+            }
             else {
                 std::stringstream ss;
-                ss << "At position " << pos << ": expected F, found EOL.";
+                ss << "At position " << cur_pos << ": expected F, found " << data[cur_pos] << '.' << std::endl;
                 throw std::exception(ss.str().c_str());
             }
         
@@ -269,7 +245,6 @@ DEBUG("parse", "F");
 
         void rearrange() {
 DEBUG("rearrange", "F");
-            if(is_leaf()) return;
 
             std::vector<std::unique_ptr<Node> > temp;
             temp.reserve(children.size());
@@ -279,10 +254,7 @@ DEBUG("rearrange", "F");
                 temp.emplace_back(std::move(p));
             }
 
-            children.clear();
-            children.reserve(1);
-
-            children.emplace_back(std::move(temp[0]));
+            assign(std::move(temp[0]));
         }
     };
 
@@ -310,7 +282,7 @@ DEBUG("parse", "V");
         }
 
         void rearrange() {
-DEBUG("rearragne", "V");
+DEBUG("rearrange", "V");
         }
     };
 
@@ -396,18 +368,15 @@ DEBUG("rearrange", "T");
                 p->rearrange();
                 temp.emplace_back(std::move(p));
             }
-
-            children.clear();
-
+            
             if(temp[2]->is_leaf()) {
-                children.reserve(1);
-                children.emplace_back(std::move(temp[0]));
+                assign(std::move(temp[0]));
             }
             else {
-                children.reserve(1);
-                children.emplace_back(std::move(temp[2]->children[0]));
-                children[0]->children.emplace_back(std::move(temp[0]));
-                children[0]->children.emplace_back(std::move(temp[2]->children[1]));
+                assign(std::move(temp[2]->children[0]));
+                children.reserve(2);
+                children.emplace_back(std::move(temp[0]));
+                children.emplace_back(std::move(temp[2]->children[1]));
             }
         }
     };
@@ -436,7 +405,7 @@ DEBUG("parse", "U");
         }
 
         void rearrange() {
-DEBUG("parse", "U");
+DEBUG("rearrange", "U");
         }
     };
 
@@ -521,18 +490,15 @@ DEBUG("rearrange", "E");
                 p->rearrange();
                 temp.emplace_back(std::move(p));
             }
-
-            children.clear();
-
+            
             if(temp[2]->is_leaf()) {
-                children.reserve(1);
-                children.emplace_back(std::move(temp[0]));
+                assign(std::move(temp[0]));
             }
             else {
-                children.reserve(1);
-                children.emplace_back(std::move(temp[2]->children[0]));
-                children[0]->children.emplace_back(std::move(temp[0]));
-                children[0]->children.emplace_back(std::move(temp[2]->children[1]));
+                assign(std::move(temp[2]->children[0]));
+                children.reserve(2);
+                children.emplace_back(std::move(temp[0]));
+                children.emplace_back(std::move(temp[2]->children[1]));
             }
         }
     };
@@ -578,10 +544,7 @@ DEBUG("rearrange", "S");
                 temp.emplace_back(std::move(p));
             }
 
-            children.clear();
-            children.reserve(1);
-
-            children.emplace_back(std::move(temp[1]));
+            assign(std::move(temp[1]));
         }
     };
 }
@@ -596,11 +559,11 @@ int main() {
             cnt++;
             std::cout << "Test case " << cnt << ": " << buffer << std::endl;
             std::cout << "Result: ";
-            // buffer.erase(std::remove_if(buffer.begin(), buffer.end(), ::isspace), buffer.end());
             NONAME_NAMESPACE::S s(buffer);
             s.parse();
             s.rearrange();
             s.dfs(out_file);
+            out_file << '\n';
             std::cout << "PASS" << std::endl;
             buffer.clear();
         }
