@@ -1,13 +1,28 @@
+#include <algorithm>
+#include <cassert>
+#include <cctype>
 #include <exception>
+#include <fstream>
 #include <iostream>
 #include <memory>
+#include <ostream>
 #include <sstream>
 #include <string>
 #include <string_view>
 #include <type_traits>
 #include <vector>
 
-/* 
+#ifdef MODE_DEBUG
+#define DEBUG(str) std::cout << str << std::endl
+#else
+#define DEBUG(str)
+#endif
+
+/*
+    Before parsing, use only one whitespace instead of continued whitespace to regularize the input.
+    
+    This does not change the result.
+
     //////////// e is a null symbol ////////////
 
     <digit> ::= [0-9]                                   digit
@@ -18,34 +33,21 @@
 
     <id> ::= [a-zA-Z]                                   identifier
 
-    <whitespaces> ::= <whitespace><whitespaces> | e     whitespaces
+    S ::= E                                             Start symbol
 
-    S ::= <whitespaces>E<whitespaces>                   Start symbol
+    F ::= <digits> | <id>                               factor
 
-    F ::= <digits>                                      factor
-        | <id>
+    T ::= FJ                                            term
 
-    T ::= FI                                            term
+    J ::= VT | e                                        right recursion of term
 
-    I ::= N | e                                         right recursion of term 1
+    V ::= <*> | </>                                     symbols
 
-    J ::= V<whitespaces>J                               right recursion of term 2
+    E ::= TI                                            expression
 
-    N ::= <whitespace><whitespaces>J                    right recursion of term 3
-        | J
-
-    V ::= <*> | </>
-
-    E ::= TK                                            expression
-
-    K ::= M | e                                         right recursion of expression 1
-
-    L ::= U<whitespaces>M                               right recursion of expression 2
-        
-    M ::= <whitespace><whitespaces>L                    right recursion of expression 3
-        | L
-
-    U ::= <+> | <->
+    I ::= UE | e                                        right recursion of expression 
+    
+    U ::= <+> | <->                                     symbols
 */
 
 namespace NONAME_NAMESPACE {
@@ -61,46 +63,19 @@ namespace NONAME_NAMESPACE {
         bool is_leaf() const noexcept { return children.empty(); }
 
         virtual std::size_t parse() = 0;
+
+        virtual void rearrange() = 0;
     };
 
-    struct whitespace : Node {
-        explicit whitespace(std::string_view original, std::size_t pos) : Node(original, pos, 1) {}
+    std::ostream &operator<<(std::ostream &os, Node const &node) {
+        os << node.data.substr(node.pos, node.length);
+        return os;
+    }
 
-        std::size_t parse() {
-            if(pos >= data.length()) {
-                std::stringstream ss;
-                ss << "At position " << pos << ": expected <whitespace>, found EOL.";
-                throw std::exception(ss.str().c_str());
-            }
-            if(data[pos] > 32 && data[pos] != 127) {
-                std::stringstream ss;
-                ss << "At position " << pos << ": expected <whitespace>, found " << data[pos] << '.';
-                throw std::exception(ss.str().c_str());
-            }
-std::cout << "whitespace -> " << data[pos] << std::endl;
-            return pos + 1;
-        }
-    };
-
-    struct whitespaces : Node {
-        explicit whitespaces(std::string_view original, std::size_t pos) : Node(original, pos, 0) {}
-
-        std::size_t parse() {
-            auto cur_pos = pos;
-            if(cur_pos < data.length() && (data[cur_pos] < 33 || data[cur_pos] == 127)) {
-                children.reserve(2);
-                children.emplace_back(std::make_unique<whitespace>(data, cur_pos));
-std::cout << "whitespaces -> whitespace" << std::endl;
-                cur_pos = children[0]->parse();
-                children.emplace_back(std::make_unique<whitespaces>(data, cur_pos));
-std::cout << "whitespaces -> whitespaces" << std::endl;
-                cur_pos = children[1]->parse();
-            }
-else std::cout << "whitespaces -> e" << std::endl;
-            length = cur_pos - pos;
-            return cur_pos;
-        }
-    };
+    std::ostream &operator<<(std::ostream &os, std::unique_ptr<Node> &&node) {
+        os << node->data.substr(node->pos, node->length);
+        return os;
+    }
 
     struct digit : Node {
         explicit digit(std::string_view original, std::size_t pos) : Node(original, pos, 1) {}
@@ -116,8 +91,12 @@ else std::cout << "whitespaces -> e" << std::endl;
                 ss << "At position " << pos << ": expected <digit>, found " << data[pos] << '.';
                 throw std::exception(ss.str().c_str());
             }
-std::cout << "digit -> " << data[pos] << std::endl;
             return pos + 1;
+        }
+
+        void rearrange() {
+DEBUG("digit");
+            assert(is_leaf());
         }
     };
 
@@ -128,16 +107,37 @@ std::cout << "digit -> " << data[pos] << std::endl;
             auto cur_pos = pos;
             if(cur_pos < data.length() && data[cur_pos] >= '0' && data[cur_pos] <= '9') {
                 children.reserve(2);
+
                 children.emplace_back(std::make_unique<digit>(data, cur_pos));
-std::cout << "D -> digit" << std::endl;
                 cur_pos = children[0]->parse();
+
                 children.emplace_back(std::make_unique<D>(data, cur_pos));
-std::cout << "D -> D" << std::endl;
                 cur_pos = children[1]->parse();
             }
-else std::cout << "D -> e" << std::endl;
             length = cur_pos - pos;
             return cur_pos;
+        }
+
+        void rearrange() {
+DEBUG("D");
+            if(is_leaf()) return;
+            assert(children.size() == 2);
+
+            children[0]->rearrange();
+            children[1]->rearrange();
+            
+            auto p1 = std::move(children[0]);
+            auto p2 = std::move(children[1]);
+            
+            children.clear();
+            children.reserve(p2->children.size() + 1);
+
+            children.emplace_back(std::move(p1));
+            if(!p2->is_leaf()) {
+                for(std::size_t i = 0; i < p2->children.size(); i++) {
+                    children.emplace_back(std::move(p2->children[i]));
+                }
+            }
         }
     };
 
@@ -147,14 +147,36 @@ else std::cout << "D -> e" << std::endl;
         std::size_t parse() {
             auto cur_pos = pos;
             children.reserve(2);
+
             children.emplace_back(std::make_unique<digit>(data, cur_pos));
-std::cout << "digits -> digit" << std::endl;
             cur_pos = children[0]->parse();
+
             children.emplace_back(std::make_unique<D>(data, cur_pos));
-std::cout << "digits -> D" << std::endl;
             cur_pos = children[1]->parse();
+
             length = cur_pos - pos;
             return cur_pos;
+        }
+
+        void rearrange() {
+DEBUG("digits");
+            assert(children.size() == 2);
+
+            children[0]->rearrange();
+            children[1]->rearrange();
+
+            auto p1 = std::move(children[0]);
+            auto p2 = std::move(children[1]);
+            
+            children.clear();
+            children.reserve(p2->children.size() + 1);
+
+            children.emplace_back(std::move(p1));
+            if(!p2->is_leaf()) {
+                for(std::size_t i = 0; i < p2->children.size(); i++) {
+                    children.emplace_back(std::move(p2->children[i]));
+                }
+            }
         }
     };
 
@@ -172,35 +194,57 @@ std::cout << "digits -> D" << std::endl;
                 ss << "At position " << pos << ": expected <identifier>, found " << data[pos] << '.';
                 throw std::exception(ss.str().c_str());
             }
-std::cout << "identifier -> " << data[pos] << std::endl;
             return pos + 1;
+        }
+
+        void rearrange() {
+DEBUG("identifier");
+            assert(is_leaf());
         }
     };
 
-    struct factor : Node {
-        explicit factor(std::string_view original, std::size_t pos) : Node(original, pos, 0) {}
+    struct F : Node {
+        explicit F(std::string_view original, std::size_t pos) : Node(original, pos, 0) {}
 
         std::size_t parse() {
             auto cur_pos = pos;
-            children.reserve(1);
-            if(cur_pos < data.length()) {
-                if(data[cur_pos] >= '0' && data[cur_pos] <= '9') {
-                    children.emplace_back(std::make_unique<digits>(data, cur_pos));
-std::cout << "factor -> digits" << std::endl;
-                }
-                else {
-                    children.emplace_back(std::make_unique<identifier>(data, cur_pos));
-std::cout << "factor -> identifier" << std::endl;
-                }
+            if(cur_pos >= data.length()) {
+                std::stringstream ss;
+                ss << "At position " << cur_pos << ": expected F, found EOL.";
+                throw std::exception(ss.str().c_str());
+            }
+            if(data[cur_pos] >= '0' && data[cur_pos] <= '9') {
+                children.reserve(1);
+
+                children.emplace_back(std::make_unique<digits>(data, cur_pos));
                 cur_pos = children[0]->parse();
+
                 length = cur_pos - pos;
                 return cur_pos;
             }
-            else {
-                std::stringstream ss;
-                ss << "At position " << pos << ": expected <factor>, found EOL.";
-                throw std::exception(ss.str().c_str());
+            if((data[pos] >= 'a' && data[pos] <= 'z') || (data[pos] >= 'A' && data[pos] <= 'Z')) {
+                children.reserve(1);
+
+                children.emplace_back(std::make_unique<identifier>(data, cur_pos));
+                cur_pos = children[0]->parse();
+
+                length = cur_pos - pos;
+                return cur_pos;
             }
+            std::stringstream ss;
+            ss << "At position " << cur_pos << ": expected F, found " << data[cur_pos] << '.';
+            throw std::exception(ss.str().c_str());
+        }
+
+        void rearrange() {
+DEBUG("F");
+            assert(children.size() == 1);
+
+            children[0]->rearrange();
+            
+            auto p = std::move(children[0]);
+
+            children.swap(p->children);
         }
     };
 
@@ -215,61 +259,96 @@ std::cout << "factor -> identifier" << std::endl;
             }
             if(data[pos] != '*' && data[pos] != '/') {
                 std::stringstream ss;
-                ss << "At position " << pos << ": expected V, found " << data[pos] << '.';
+                ss << "At position " << pos << ": expected V, found " << data[pos] << '.' << std::endl;
                 throw std::exception(ss.str().c_str());
             }
-std::cout << "V -> " << data[pos] << std::endl;
             return pos + 1;
+        }
+
+        void rearrange() {
+DEBUG("V");
+            assert(is_leaf());
         }
     };
 
-	struct I;
+    struct T;
 
     struct J : Node {
         explicit J(std::string_view original, std::size_t pos) : Node(original, pos, 0) {}
 
         std::size_t parse() {
             auto cur_pos = pos;
-            children.reserve(3);
-            children.emplace_back(std::make_unique<V>(data, cur_pos));
-std::cout << "J -> V" << std::endl;
-            cur_pos = children[0]->parse();
-            children.emplace_back(std::make_unique<whitespaces>(data, cur_pos));
-std::cout << "J -> whitespaces" << std::endl;
-            cur_pos = children[1]->parse();
-            children.emplace_back(std::make_unique<I>(data, cur_pos));
-std::cout << "J -> I" << std::endl;
-            cur_pos = children[2]->parse();
+            if(cur_pos > data.length()) {
+                std::stringstream ss;
+                ss << "At position " << cur_pos << ": expected J, found EOL.";
+                throw std::exception(ss.str().c_str());
+            }
+            if(cur_pos < data.length() && (data[cur_pos] == '*' || data[cur_pos] == '/')) {
+                children.reserve(2);
+
+                children.emplace_back(std::make_unique<V>(data, cur_pos));
+                cur_pos = children[0]->parse();
+
+                children.emplace_back(std::make_unique<T>(data, cur_pos));
+                cur_pos = children[1]->parse();
+            }
             length = cur_pos - pos;
             return cur_pos;
         }
-    };
 
-    struct I : Node {
-        explicit I(std::string_view original, std::size_t pos) : Node(original, pos, 0) {}
+        void rearrange() {
+DEBUG("J");
+            if(is_leaf()) return;
 
-        std::size_t parse() {
-            auto cur_pos = pos;
-            if(cur_pos < data.length() && ) {
-                
-            }
+            children[0]->rearrange();
+            children[1]->rearrange();
+
+            auto p = std::move(children[1]->children[0]);
+            
+            children[1] = std::move(p);
         }
     };
 
-    struct term : Node {
-        explicit term(std::string_view original, std::size_t pos) : Node(original, pos, 0) {}
+    struct T : Node {
+        explicit T(std::string_view original, std::size_t pos) : Node(original, pos, 0) {}
 
         std::size_t parse() {
             auto cur_pos = pos;
             children.reserve(2);
-            children.emplace_back(std::make_unique<factor>(data, cur_pos));
-std::cout << "term -> factor" << std::endl;
+
+            children.emplace_back(std::make_unique<F>(data, cur_pos));
             cur_pos = children[0]->parse();
-            children.emplace_back(std::make_unique<I>(data, cur_pos));
-std::cout << "term -> I" << std::endl;
+
+            children.emplace_back(std::make_unique<J>(data, cur_pos));
             cur_pos = children[1]->parse();
+
             length = cur_pos - pos;
             return cur_pos;
+        }
+
+        void rearrange() {
+DEBUG("T");
+            children[0]->rearrange(); // F
+            children[1]->rearrange(); // J
+            
+            if(children[1]->is_leaf()) {
+                auto p = std::move(children[0]);
+                children.swap(p->children);
+                return;
+            }
+
+            auto p1 = std::move(children[0]->children[0]); // T
+            auto p2 = std::move(children[1]->children[0]); // V
+            auto p3 = std::move(children[1]->children[1]); // T
+
+            assert(p2->is_leaf());
+
+            p2->children.reserve(2);
+            p2->children.emplace_back(std::move(p1));
+            p2->children.emplace_back(std::move(p3));
+            
+            children.clear();
+            children.emplace_back(std::move(p2));
         }
     };
 
@@ -284,84 +363,96 @@ std::cout << "term -> I" << std::endl;
             }
             if(data[pos] != '+' && data[pos] != '-') {
                 std::stringstream ss;
-                ss << "At position " << pos << ": expected U, found " << data[pos] << '.';
+                ss << "At position " << pos << ": expected U, found " << data[pos] << '.' << std::endl;
                 throw std::exception(ss.str().c_str());
             }
-std::cout << "U -> " << data[pos] << std::endl;
             return pos + 1;
         }
-    };
 
-	struct K;
-
-    struct L : Node {
-        explicit L(std::string_view original, std::size_t pos) : Node(original, pos, 0) {}
-
-        std::size_t parse() {
-            auto cur_pos = pos;
-            children.reserve(3);
-            children.emplace_back(std::make_unique<U>(data, cur_pos));
-std::cout << "L -> U" << std::endl;
-            cur_pos = children[0]->parse();
-            children.emplace_back(std::make_unique<whitespaces>(data, cur_pos));
-std::cout << "L -> whitespaces" << std::endl;
-            cur_pos = children[1]->parse();
-            children.emplace_back(std::make_unique<K>(data, cur_pos));
-std::cout << "L -> K" << std::endl;
-            cur_pos = children[2]->parse();
-            length = cur_pos - pos;
-            return cur_pos;
+        void rearrange() {
+DEBUG("U");
+            assert(is_leaf());
         }
     };
 
-    struct K : Node {
-        explicit K(std::string_view original, std::size_t pos) : Node(original, pos, 0) {}
+    struct E;
+
+    struct I : Node {
+        explicit I(std::string_view original, std::size_t pos) : Node(original, pos, 0) {}
 
         std::size_t parse() {
             auto cur_pos = pos;
-std::cout << cur_pos << std::endl;
-std::cout <<data.length() << std::endl;
-            if(cur_pos < data.length()) {
-                if(data[cur_pos] < 33 || data[cur_pos] == 127) {
-                    children.reserve(3);
-                    children.emplace_back(std::make_unique<whitespace>(data, cur_pos));
-std::cout << "K -> whitespace" << std::endl;
-                    cur_pos = children[0]->parse();
-                    children.emplace_back(std::make_unique<whitespaces>(data, cur_pos));
-std::cout << "K -> whitespaces" << std::endl;
-                    cur_pos = children[1]->parse();
-                    children.emplace_back(std::make_unique<L>(data, cur_pos));
-std::cout << "K -> L" << std::endl;
-                    cur_pos = children[2]->parse();
-                }
-                else if(data[cur_pos] == '+' || data[cur_pos] == '-') {
-                    children.reserve(1);
-                    children.emplace_back(std::make_unique<L>(data, cur_pos));
-std::cout << "K -> L" << std::endl;
-                    cur_pos = children[0]->parse();
-                }
-else std::cout << "K -> e" << std::endl;
+            if(cur_pos > data.length()) {
+                std::stringstream ss;
+                ss << "At position " << cur_pos << ": expected I, found EOL.";
+                throw std::exception(ss.str().c_str());
             }
-else std::cout << "K -> e" << std::endl;
+            if(cur_pos < data.length() && (data[cur_pos] == '+' || data[cur_pos] == '-')) {
+                children.reserve(2);
+
+                children.emplace_back(std::make_unique<U>(data, cur_pos));
+                cur_pos = children[0]->parse();
+
+                children.emplace_back(std::make_unique<E>(data, cur_pos));
+                cur_pos = children[1]->parse();
+            }
             length = cur_pos - pos;
             return cur_pos;
         }
+
+        void rearrange() {
+DEBUG("I");
+            if(is_leaf()) return; // e
+
+            children[0]->rearrange(); // U
+            children[1]->rearrange(); // E
+
+            auto p = std::move(children[1]->children[0]);
+            
+            children[1] = std::move(p);
+        }
     };
 
-    struct expression : Node {
-        explicit expression(std::string_view original, std::size_t pos) : Node(original, pos, 0) {}
+    struct E : Node {
+        explicit E(std::string_view original, std::size_t pos) : Node(original, pos, 0) {}
 
         std::size_t parse() {
             auto cur_pos = pos;
             children.reserve(2);
-            children.emplace_back(std::make_unique<term>(data, cur_pos));
-std::cout << "expression -> term" << std::endl;
+
+            children.emplace_back(std::make_unique<T>(data, cur_pos));
             cur_pos = children[0]->parse();
-            children.emplace_back(std::make_unique<K>(data, cur_pos));
-std::cout << "expression -> K" << std::endl;
+
+            children.emplace_back(std::make_unique<I>(data, cur_pos));
             cur_pos = children[1]->parse();
+
             length = cur_pos - pos;
             return cur_pos;
+        }
+
+        void rearrange() {
+DEBUG("E");
+            children[0]->rearrange(); // T
+            children[1]->rearrange(); // I
+            
+            if(children[1]->is_leaf()) {
+                auto p = std::move(children[0]);
+                children.swap(p->children);
+                return;
+            }
+
+            auto p1 = std::move(children[0]->children[0]); // E
+            auto p2 = std::move(children[1]->children[0]); // U
+            auto p3 = std::move(children[1]->children[1]); // E
+
+            assert(p2->is_leaf());
+
+            p2->children.reserve(2);
+            p2->children.emplace_back(std::move(p1));
+            p2->children.emplace_back(std::move(p3));
+            
+            children.clear();
+            children.emplace_back(std::move(p2));
         }
     };
 
@@ -370,32 +461,51 @@ std::cout << "expression -> K" << std::endl;
         
         std::size_t parse() {
             auto cur_pos = pos;
-            children.reserve(3);
-            children.emplace_back(std::make_unique<whitespaces>(data, cur_pos));
-std::cout << "S -> whitespaces" << std::endl;
+            children.reserve(1);
+
+            children.emplace_back(std::make_unique<E>(data, cur_pos));
             cur_pos = children[0]->parse();
-            children.emplace_back(std::make_unique<expression>(data, cur_pos));
-std::cout << "S -> expression" << std::endl;
-            cur_pos = children[1]->parse();
-            children.emplace_back(std::make_unique<whitespaces>(data, cur_pos));
-std::cout << "S -> whitespaces" << std::endl;
-            cur_pos = children[2]->parse();
+
             length = cur_pos - pos;
+            
+            if(cur_pos != data.length()) {
+                std::stringstream ss;
+                ss << "At position " << cur_pos << ": expected EOL, found " << data[cur_pos] << '.' << std::endl;
+                throw std::exception(ss.str().c_str());
+            }
+
             return cur_pos;
+        }
+
+        void rearrange() {
+DEBUG("S");
+            children[0]->rearrange();
+
+            auto p = std::move(children[0]);
+
+            children.swap(p->children);
         }
     };
 }
 
 int main() {
     std::string buffer;
-    while(std::getline(std::cin, buffer)) {
+    std::ifstream in_file("input.txt");
+    std::ofstream out_file("output.txt");
+    std::size_t cnt = 0;
+    while(std::getline(in_file, buffer)) {
         try {
+            cnt++;
+            std::cout << "Test case " << cnt << ": " << buffer << std::endl;
+            std::cout << "Result: ";
+            buffer.erase(std::remove_if(buffer.begin(), buffer.end(), ::isspace), buffer.end());
             NONAME_NAMESPACE::S s(buffer);
             s.parse();
+            s.rearrange();
+            std::cout << "PASS" << std::endl;
             buffer.clear();
         }
         catch(std::exception &e) {
-            std::cout << "HELLOTHERE" << std::endl;
             std::cout << e.what() << std::endl;
             buffer.clear();
         }
