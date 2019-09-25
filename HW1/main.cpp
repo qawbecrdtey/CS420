@@ -1,6 +1,5 @@
 #include <algorithm>
 #include <cassert>
-#include <cctype>
 #include <exception>
 #include <fstream>
 #include <iostream>
@@ -9,7 +8,6 @@
 #include <sstream>
 #include <string>
 #include <string_view>
-#include <type_traits>
 #include <vector>
 
 #ifdef MODE_DEBUG
@@ -96,11 +94,6 @@ namespace NONAME_NAMESPACE {
 DEBUG("parse", "whitespaces");
             auto cur_pos = pos;
 
-            if(pos > data.length()) {
-                std::stringstream ss;
-                ss << "At position " << pos << ": expected <whitespace>, found EOL.";
-                throw std::exception(ss.str().c_str());
-            }
             while(cur_pos < data.length() && (data[cur_pos] < 33 || data[cur_pos] == 127)) cur_pos++;
 
             length = cur_pos - pos;
