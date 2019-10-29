@@ -1,14 +1,19 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <string_view>
+#include <vector>
 
 int main(int argc, char *argv[]) {
-    std::string input_file_name = "input.txt";
+
+/* FILE INPUT */
+
+    std::string input_file_name = "../input.txt";
     std::string source;
     // The first element denotes the input file.
     // If no first element exists, then the default is "input.txt".
     if(argc < 2) {
-        std::cout << "Using input file input.txt as default." << std::endl;
+        std::cout << "Using input file ../input.txt as default." << std::endl;
     }
     else {
         std::cout << "Using input file " << (input_file_name = argv[1]) << '.' << std::endl;
@@ -27,5 +32,7 @@ int main(int argc, char *argv[]) {
     in.read(&source[0], source.size());
     in.close();
 
-    
+/* FILE INPUT END */
+
+    std::cout << source << std::endl;
 }
