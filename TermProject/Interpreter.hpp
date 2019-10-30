@@ -34,14 +34,16 @@ namespace Interpreter {
 /// END DEFINITION : token
 
 /// DEFINITION : nonterminal
+/// Should implement all nonterminals.
 
-    struct whitespaces {
-        
-    };
+    struct whitespace {};
+    struct whitespaces {};
+    
 
 /// END DEFINITION : nonterminal
 
 /// DEFINITION : production
+/// Should implement all productions
 
     template<typename T, typename ...Args>
     struct production {

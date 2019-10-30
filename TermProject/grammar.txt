@@ -1,0 +1,50 @@
+// 'e' denotes empty string
+// Elements in <> means the string
+// For example, <> == e
+// If explanation of set of tokens is needed, put the explanation between $ $
+
+// reference : https://en.cppreference.com/w/cpp/language/expressions
+
+// Augmented grammar
+S'                          ::= S
+
+// We consider only functions in global scope
+S                           ::= whitespace_s function_decl_def whitespace_s main_function whitespace_s function_decl_def whitespace_s
+
+// whitespace*
+whitespace_s                ::= whitespace whitespace_s
+                            |   e
+
+whitespace                  ::= $all non-printables$
+
+// Includes:
+// Function declaration statement = void f(float x, int y);
+// Function definition statement = void g(float a, int b) { printf("Hello %f %d!", a, b); }
+function_decl_def           ::= function_decl_statement whitespace_s function_decl_def
+                            |   function_def_statement whitespace_s function_decl_def
+                            |   e
+
+function_decl_statement     ::= type whitespaces identifier_not_main whitespace_s <(> parameters_decl_s <)> whitespace_s <;>
+
+type                        ::= <int> | <float> | <void>
+
+// whitespace+
+whitespaces                 ::= whitespace whitespace_s
+
+// WARNING : THE IDENTIFIER SHOULD NOT BE <main>
+identifier_not_main         ::= identifier_init identifier_last
+
+identifier_init             ::= $A-Z a-z _$
+
+identifier_last             ::= $0-9 A-Z a-z$
+
+parameters_decl_s           ::= type whitespaces identifier_not_main whitespace_s parameters_decl_next
+                            |   whitespace_s
+
+parameters_decl_next        ::= <,> parameter_decl_s
+                            |   e
+
+function_def_statement      ::= type whitespaces identifier_not_main whitespace_s <(> parameters_decl_s <)> whitespace_s <{> statement_s <}>
+
+statement_s                 ::= statement whitespace_s statement_s
+                            |   e
