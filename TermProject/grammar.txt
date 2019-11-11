@@ -8,45 +8,132 @@
 // reference : https://en.cppreference.com/w/cpp/language/expressions
 
 // Augmented grammar
-S'                          ::= S
+S'                                      ::= S
 
 // We consider only functions in global scope
-S                           ::= whitespace_s function_decl_def whitespace_s main_function whitespace_s function_decl_def whitespace_s
+S                                       ::= WS function_decl_def WS main_function WS function_decl_def WS
 
 // whitespace*
-whitespace_s                ::= whitespace whitespace_s
-                            |   e
+WS                                      ::= whitespace WS
+                                        |   e
 
-whitespace                  ::= $all non-printables$
+whitespace                              ::= $all non-printables$
 
 // Includes:
 // Function declaration statement = void f(float x, int y);
 // Function definition statement = void g(float a, int b) { printf("Hello %f %d!", a, b); }
-function_decl_def           ::= function_decl_statement whitespace_s function_decl_def
-                            |   function_def_statement whitespace_s function_decl_def
-                            |   e
+function_decl_def                       ::= function_decl_statement WS function_decl_def
+                                        |   function_def_statement WS function_decl_def
+                                        |   e
 
-function_decl_statement     ::= type whitespaces identifier_not_main whitespace_s <(> parameters_decl_s <)> whitespace_s <;>
+function_decl_statement                 ::= type whitespaces identifier WS <(> parameters_decl_s <)> WS <;>
 
-type                        ::= <int> | <float> | <void>
+type                                    ::= <int> | <float> | <void>
 
 // whitespace+
-whitespaces                 ::= whitespace whitespace_s
+whitespaces                             ::= whitespace WS
 
 // WARNING : THE IDENTIFIER SHOULD NOT BE <main>
-identifier_not_main         ::= identifier_init identifier_last
+identifier                              ::= identifier_init identifier_last
 
-identifier_init             ::= $A-Z a-z _$
+identifier_init                         ::= $A-Z a-z _$
 
-identifier_last             ::= $0-9 A-Z a-z$
+identifier_last                         ::= $0-9 A-Z a-z$
 
-parameters_decl_s           ::= type whitespaces identifier_not_main whitespace_s parameters_decl_next
-                            |   whitespace_s
+parameters_decl_s                       ::= type whitespaces identifier WS parameters_decl_next
+                                        |   WS
 
-parameters_decl_next        ::= <,> parameter_decl_s
-                            |   e
+parameters_decl_next                    ::= <,> parameter_decl_s
+                                        |   e
 
-function_def_statement      ::= type whitespaces identifier_not_main whitespace_s <(> parameters_decl_s <)> whitespace_s <{> statement_s <}>
+function_def_statement                  ::= type whitespaces identifier WS <(> parameters_decl_s <)> WS <{> statement_declaration_s <}>
 
-statement_s                 ::= statement whitespace_s statement_s
-                            |   e
+statement_declaration_s                 ::= statement_declaration WS statement_declaration_s
+                                        |   e
+
+statement_declaration                   ::= statement
+                                        |   declaration
+
+statement                               ::= compound_statement
+                                        |   epression_statement
+                                        |   selection_statement
+                                        |   iteration_statement
+                                        |   jump_statement
+
+compound_statement                      ::= <{> WS statement_declaration_s WS <}>
+
+epression_statement                     ::= expression WS <;>
+
+expression                              ::= primary_expression
+                                        |   assignment_expression
+                                        |   increment_decrement_expression
+                                        |   arithmetic_expression
+                                        |   logical_expression
+                                        |   comparison_epression
+                                        |   member_access_expression
+                                        |   <(> expression <)>
+
+primary_expression                      ::= integer
+                                        |   float
+                                        |   identifier
+                                        |   identifier WS <(> WS parameter_s WS <)>
+
+integer                                 ::= nonneg_integer
+                                        |   <+> WS nonneg_integer
+                                        |   <-> WS nonneg_integer
+
+nonneg_integer                          ::= $[0-9]+$
+
+float                                   ::= nonneg_float
+                                        |   <+> WS nonneg_float
+                                        |   <-> WS nonneg_float
+
+nonneg_float                            ::= $[0-9]*.[0-9]+$
+
+parameter_s                             ::= parameter WS parameter_next
+                                        |   e
+
+parameter                               ::= identifier
+                                        |   integer
+                                        |   float
+                                        |   expression
+
+parameter_next                          ::= <,> WS parameter WS parameter_next
+
+assignment_expression                   ::= lvalue WS <=> WS expression
+                                        |   lvalue WS <+=> WS expression
+                                        |   lvalue WS <-=> WS expression
+                                        |   lvalue WS <*=> WS expression
+                                        |   lvalue WS </=> WS expression
+                                        |   lvalue WS <%=> WS expression
+
+lvalue                                  ::= identifier
+                                        |   member_access_expression
+                                        |   increment_decrement_expression
+
+member_access_expression                ::= expression WS <[> WS expression WS <]>
+
+increment_decrement_expression          ::= <++> WS expression
+                                        |   <--> WS expression
+                                        |   expression WS <++>
+                                        |   expression WS <-->
+
+arithmetic_expression                   ::= <+> WS expression
+                                        |   <-> WS expression
+                                        |   expression WS <+> WS expression
+                                        |   expression WS <-> WS expression
+                                        |   expression WS <*> WS expression
+                                        |   expression WS </> WS expression
+                                        |   expression WS <%> WS expression
+
+logical_expression                      ::= <!> WS expression
+                                        |   expression WS <&&> WS expression
+                                        |   expression WS <||> WS expression
+
+comparison_epression                    ::= expression WS <==> WS expression
+                                        |   expression WS <!=> WS expression
+                                        |   expression WS <<> WS expression
+                                        |   expression WS <>> WS expression
+                                        |   expression WS <<=> WS expression
+                                        |   expression WS <>=> WS expression
+
