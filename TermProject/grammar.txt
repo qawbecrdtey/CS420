@@ -55,7 +55,7 @@ statement_declaration                   ::= statement
                                         |   declaration
 
 statement                               ::= compound_statement
-                                        |   epression_statement
+                                        |   expression_statement
                                         |   selection_statement
                                         |   iteration_statement
                                         |   jump_statement
