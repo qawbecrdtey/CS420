@@ -26,9 +26,9 @@ function_decl_def                       ::= function_decl_statement WS function_
                                         |   function_def_statement WS function_decl_def
                                         |   e
 
-function_decl_statement                 ::= type whitespaces identifier WS <(> parameters_decl_s <)> WS <;>
+function_decl_statement                 ::= type_specifier whitespaces identifier WS <(> parameters_decl_s <)> WS <;>
 
-type                                    ::= <int> | <float> | <void>
+type_specifier                          ::= <int> | <float> | <void>
 
 // whitespace+
 whitespaces                             ::= whitespace WS
@@ -40,13 +40,13 @@ identifier_init                         ::= $A-Z a-z _$
 
 identifier_last                         ::= $0-9 A-Z a-z$
 
-parameters_decl_s                       ::= type whitespaces identifier WS parameters_decl_next
+parameters_decl_s                       ::= type_specifier whitespaces identifier WS parameters_decl_next
                                         |   WS
 
 parameters_decl_next                    ::= <,> parameter_decl_s
                                         |   e
 
-function_def_statement                  ::= type whitespaces identifier WS <(> parameters_decl_s <)> WS <{> statement_declaration_s <}>
+function_def_statement                  ::= type_specifier whitespaces identifier WS <(> parameters_decl_s <)> WS <{> statement_declaration_s <}>
 
 statement_declaration_s                 ::= statement_declaration WS statement_declaration_s
                                         |   e
@@ -58,11 +58,11 @@ statement                               ::= compound_statement
                                         |   expression_statement
                                         |   selection_statement
                                         |   iteration_statement
-                                        |   jump_statement
 
 compound_statement                      ::= <{> WS statement_declaration_s WS <}>
 
 epression_statement                     ::= expression WS <;>
+                                        |   <;>
 
 expression                              ::= primary_expression
                                         |   assignment_expression
@@ -77,6 +77,7 @@ primary_expression                      ::= integer
                                         |   float
                                         |   identifier
                                         |   identifier WS <(> WS parameter_s WS <)>
+                                        |   string_literal
 
 integer                                 ::= nonneg_integer
                                         |   <+> WS nonneg_integer
@@ -136,4 +137,31 @@ comparison_epression                    ::= expression WS <==> WS expression
                                         |   expression WS <>> WS expression
                                         |   expression WS <<=> WS expression
                                         |   expression WS <>=> WS expression
+
+selection_statement                     ::= <if> WS <(> WS expression WS <)> WS statement selection_else_conditional
+
+selection_else_conditional              ::= WS <else> statement
+                                        |   e
+
+iteration_statement                     ::= <for> WS <(> WS expression_opt WS <;> WS expression_opt WS <;> WS expression_opt WS <)> WS statement
+                                        |   <for> WS <(> WS declaration WS expression_opt WS <;> WS expression_opt WS <)> WS statement
+
+expression_opt                          ::= expression
+                                        |   e
+
+declaration                             ::= type_specifier WS init_declarators WS <;>
+
+init_declarators                        ::= init_declarator
+                                        |   init_declarators WS <,> WS init_declarator
+
+init_declarator                         ::= identifier
+                                        |   identifier WS <=> WS initializer
+
+initializer                             ::= assignment_expression
+                                        |   <{> WS initializers WS <}>
+                                        |   <{> WS initializers WS <,> WS <}>
+                                        |   <{> <}>
+
+initializers                            ::= initializer
+                                        |   initializers WS <,> WS initializer
 
