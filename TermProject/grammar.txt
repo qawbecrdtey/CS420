@@ -138,11 +138,6 @@ comparison_epression                    ::= expression WS <==> WS expression
                                         |   expression WS <<=> WS expression
                                         |   expression WS <>=> WS expression
 
-selection_statement                     ::= <if> WS <(> WS expression WS <)> WS statement selection_else_conditional
-
-selection_else_conditional              ::= WS <else> statement
-                                        |   e
-
 iteration_statement                     ::= <for> WS <(> WS expression_opt WS <;> WS expression_opt WS <;> WS expression_opt WS <)> WS statement
                                         |   <for> WS <(> WS declaration WS expression_opt WS <;> WS expression_opt WS <)> WS statement
 
@@ -165,3 +160,11 @@ initializer                             ::= assignment_expression
 initializers                            ::= initializer
                                         |   initializers WS <,> WS initializer
 
+stmt                                    ::= matched_stmt
+                                        |   open_stmt
+
+matched_stmt                            ::= <if> WS <(> WS expression WS <)> WS matched_stmt WS <else> WS matched_stmt
+                                        |   statement
+
+open_stmt                               ::= <if> WS <(> WS expression WS <)> WS stmt
+                                        |   <if> WS <(> WS expression WS <)> WS matched_stmt WS <else> WS open_stmt
