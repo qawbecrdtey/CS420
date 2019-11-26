@@ -2,24 +2,28 @@
 #define syntax_tree_node_hpp
 
 #include <memory>
+#include <stack>
+#include <string>
 #include <vector>
 
-#include "position.hpp"
+#include "string_pos.hpp"
 
 struct syntax_tree_node {
-	position pos;
-	std::uint64_t length;
-	std::vector<syntax_tree_node> children;
+	std::vector<std::unique_ptr<syntax_tree_node>> children;
 
-	syntax_tree_node(position const& pos, std::uint64_t length);
+	explicit syntax_tree_node(std::int64_t size) {
+		if (size > -1) {
+			children.reserve(size);
+		}
+	}
 	syntax_tree_node(syntax_tree_node const &);
 	syntax_tree_node(syntax_tree_node &&) noexcept;
 	syntax_tree_node const &operator=(syntax_tree_node const &);
 	syntax_tree_node const &operator=(syntax_tree_node &&) noexcept;
 	~syntax_tree_node() = default;
 
-	void add_node(std::unique_ptr<syntax_tree_node>&& node);
-	std::uint64_t 
+	void add_node(std::unique_ptr<syntax_tree_node> &&node);
+	// virtual void parse(std::vector<std::string> const &) = 0;
 };
 
 #endif
