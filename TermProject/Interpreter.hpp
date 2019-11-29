@@ -31,9 +31,15 @@ namespace Interpreter {
         static constexpr bool value = (c != 127 && c > 32);
     };
 
+    template<typename T>
+    struct is_token : std::false_type {};
+    template<char c>
+    struct is_token<token<c>> : std::true_type {};
+
 /// END DEFINITION : token
 
 /// DEFINITION : nonterminal
+/// Need to declare all nonterminals.
 
     struct whitespaces {
         
