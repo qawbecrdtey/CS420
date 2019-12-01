@@ -14,7 +14,7 @@ struct string_pos {
 	string_pos(string_pos const &sp)
 		: base(sp.base), str(sp.str), byte(sp.byte) {}
 	string_pos(string_pos &&sp) noexcept
-		: base(std::move(sp.base)), str(std::move(sp.str)), byte(sp.byte) {}
+		: base(std::move(sp.base)), str(std::move(sp.str)), byte(std::move(sp.byte)) {}
 	string_pos const &operator=(string_pos const &sp) {
 		if (&sp != this) {
 			base = sp.base;
@@ -25,9 +25,9 @@ struct string_pos {
 	}
 	string_pos const &operator=(string_pos &&sp) noexcept {
 		if (&sp != this) {
-			base = std::forward<std::string_view>(sp.base);
-			str = std::forward<std::string_view>(sp.str);
-			byte = sp.byte;
+			base = std::move(sp.base);
+			str = std::move(sp.str);
+			byte = std::move(sp.byte);
 		}
 		return *this;
 	}
