@@ -9,4 +9,5 @@ add_executable(
     ASCII.hpp
     syntax_tree_node.hpp
     string_pos.hpp
+	grammar.hpp
 )
