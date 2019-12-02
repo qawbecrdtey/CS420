@@ -42,20 +42,23 @@ private:
 };
 
 struct syntax_tree_node {
+	std::uint64_t symbol; // 0 is token, natural numbers correspond to nonterminals.
+	string_pos pos;
 	std::vector<std::unique_ptr<syntax_tree_node>> children;
-
-	explicit syntax_tree_node(std::int64_t size) {
-		if (size > -1) children.reserve(size);
-	}
 
 	/// Args... are type of std::unique_ptr&lt;syntax_tree_node&gt;.
 	template<typename ...Args>
-	explicit syntax_tree_node(Args&&... args) {
+	explicit syntax_tree_node(std::uint64_t symbol, std::string_view base, std::int64_t byte, Args&&... args)
+		: symbol(0), pos(base, byte) {
 		auto&& v = construct_vector<std::unique_ptr<syntax_tree_node>, Args...>::func(args...);
 		std::exchange(children, v);
+		if (!children.empty()) {
+			pos.str = base.substr(pos.byte, (*children.rbegin())->pos + (*children.rbegin())->pos.str.length());
+		}
 	}
 	syntax_tree_node(syntax_tree_node const&) = delete;
-	syntax_tree_node(syntax_tree_node&& stn) noexcept {
+	syntax_tree_node(syntax_tree_node&& stn) noexcept 
+		: symbol(std::move(stn.symbol)), pos(std::move(stn.pos)) {
 		children.reserve(stn.children.size());
 		for (auto&& e : stn.children) {
 			children.emplace_back(std::move(e));
