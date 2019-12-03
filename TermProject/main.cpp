@@ -4,7 +4,8 @@
 #include <string_view>
 #include <vector>
 
-#include "grammar.hpp"
+#include "ASCII.hpp"
+#include "syntax_tree_node.hpp"
 
 int main(int argc, char* argv[]) {
 
@@ -37,4 +38,21 @@ int main(int argc, char* argv[]) {
 	/* FILE INPUT END */
 
 	std::cout << source << std::endl;
+	std::vector<syntax_tree_node*> token_vector;
+	for (std::uint64_t i = 0; i < source.size();) {
+		switch (determine_char(source[i])) {
+		case ASCII::Minus: throw std::exception("No negative char should be in the code.");
+		case ASCII::Null:
+			throw std::exception("Check : The file has null symbol.");
+		case ASCII::Control:
+			throw std::exception("Not expected control.");
+		case ASCII::Whitespace:
+			i++;
+			continue;
+		case ASCII::Printable:
+			switch (source[i]) {
+
+			}
+		}
+	}
 }

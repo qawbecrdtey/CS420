@@ -109,47 +109,14 @@ namespace grammar {
 		}
 	};
 
-	void parse(std::vector<string_pos> const& data) {
+	void parse(std::vector<std::string_view> const& data) {
 		auto&& it = data.begin();
 		std::stack<node_ptr> stack;
 		std::stack<std::int64_t> state_stack;
 		state_stack.push(0);
 
 		while (true) {
-			if (it != data.end()) {
-				switch (LRTable::ACTION[state_stack.top()][token_map[it->str]].index) {
-				case 0: // error
-				case 1: // accept
-					throw ParseError(it->str.c_str, "Wrong syntax.");
-
-				case 2: // shift
-					stack.push(std::make_unique<syntax_tree_node>(0, it->base, it->byte));
-					state_stack.push(std::get<2>(LRTable::ACTION[state_stack.top()][token_map[it->str]]).n);
-					break;
-
-				case 3: // reduce
-				{
-					auto const n = std::get<3>(LRTable::ACTION[state_stack.top()][token_map[it->str]]).n;
-					auto&& p = std::make_unique<syntax_tree_node>(n, )
-					for (std::uint64_t i = 0; i < n; i++) {
-						stack.pop();
-						state_stack.pop();
-					}
-				}
-					break;
-
-				default: throw std::bad_variant_access(); // program fault
-				}
-			}
-			else {
-				switch (LRTable::ACTION[s][0].index) {
-				case 0: // error
-				case 1: // accept
-				case 2: // shift
-				case 3: // reduce
-				default: throw std::bad_variant_access(); // program fault
-				}
-			}
+			
 		}
 	}
 }
