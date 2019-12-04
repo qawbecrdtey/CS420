@@ -2,6 +2,7 @@
 #include <iostream>
 #include <string>
 #include <string_view>
+#include <utility>
 #include <vector>
 
 #include "ASCII.hpp"
@@ -38,7 +39,7 @@ int main(int argc, char* argv[]) {
 	/* FILE INPUT END */
 
 	std::cout << source << std::endl;
-	std::vector<syntax_tree_node*> token_vector;
+	std::vector<std::unique_ptr<syntax_tree_node>> token_vector;
 	for (std::uint64_t i = 0; i < source.size();) {
 		switch (determine_char(source[i])) {
 		case ASCII::Minus: throw std::exception("No negative char should be in the code.");
@@ -49,10 +50,125 @@ int main(int argc, char* argv[]) {
 		case ASCII::Whitespace:
 			i++;
 			continue;
-		case ASCII::Printable:
-			switch (source[i]) {
+		case ASCII::Printable: {
+			using P = std::pair<char, char>;
+			bool flag = true;
+			if (i + 1 < source.size()) {
+				P const p = { source[i], source[i + 1] };
+				flag = false;
+				if (p.second == '=') {
+					switch (p.first) {
+					case '+':
+						token_vector.emplace_back(std::make_unique<syntax_tree_node>("+="));
+						break;
+					case '-':
+						token_vector.emplace_back(std::make_unique<syntax_tree_node>("-="));
+						break;
+					case '*':
+						token_vector.emplace_back(std::make_unique<syntax_tree_node>("*="));
+						break;
+					case '/':
+						token_vector.emplace_back(std::make_unique<syntax_tree_node>("/="));
+						break;
+					case '%':
+						token_vector.emplace_back(std::make_unique<syntax_tree_node>("%="));
+						break;
+					case '=':
+						token_vector.emplace_back(std::make_unique<syntax_tree_node>("=="));
+						break;
+					case '!':
+						token_vector.emplace_back(std::make_unique<syntax_tree_node>("!="));
+						break;
+					case '<':
+						token_vector.emplace_back(std::make_unique<syntax_tree_node>("<="));
+						break;
+					case '>':
+						token_vector.emplace_back(std::make_unique<syntax_tree_node>(">="));
+						break;
+					default: flag = true;
+					}
+				}
+				else if (p == P{ '+', '+' }) {
 
+				}
+				else if (p == P{ '-', '-' }) {
+
+				}
+				else if (p == P{ '/', '/' }) {
+
+				}
+				else if (p == P{ '&', '&' }) {
+
+				}
+				else if (p == P{ '|', '|' }) {
+
+				}
+				else flag = true;
 			}
+			if (flag) {
+				switch (source[i]) {
+				case '=':
+					token_vector.emplace_back(std::make_unique<syntax_tree_node>("="));
+					break;
+				case '+':
+					token_vector.emplace_back(std::make_unique<syntax_tree_node>("+"));
+					break;
+				case '-':
+					token_vector.emplace_back(std::make_unique<syntax_tree_node>("-"));
+					break;
+				case '*':
+					token_vector.emplace_back(std::make_unique<syntax_tree_node>("*"));
+					break;
+				case '/':
+					token_vector.emplace_back(std::make_unique<syntax_tree_node>("/"));
+					break;
+				case '%':
+					token_vector.emplace_back(std::make_unique<syntax_tree_node>("%"));
+					break;
+				case '\\':
+					token_vector.emplace_back(std::make_unique<syntax_tree_node>("\\"));
+					break;
+				case '!':
+					token_vector.emplace_back(std::make_unique<syntax_tree_node>("!"));
+					break;
+				case '<':
+					token_vector.emplace_back(std::make_unique<syntax_tree_node>("<"));
+					break;
+				case '>':
+					token_vector.emplace_back(std::make_unique<syntax_tree_node>(">"));
+					break;
+				case '(':
+					token_vector.emplace_back(std::make_unique<syntax_tree_node>("("));
+					break;
+				case ')':
+					token_vector.emplace_back(std::make_unique<syntax_tree_node>(")"));
+					break;
+				case '{':
+					token_vector.emplace_back(std::make_unique<syntax_tree_node>("{"));
+					break;
+				case '}':
+					token_vector.emplace_back(std::make_unique<syntax_tree_node>("}"));
+					break;
+				case '[':
+					token_vector.emplace_back(std::make_unique<syntax_tree_node>("["));
+					break;
+				case ']':
+					token_vector.emplace_back(std::make_unique<syntax_tree_node>("]"));
+					break;
+				case '\"': {
+					int x = i + 1;
+					while (x < source.size() && !(source[x] == '\"' && source[x-1] != '\\')) x++;
+				}
+				default:
+					if (is_identifier_first(source[i])) {
+						int x = i + 1;
+						while (is_identifier_middle(source[x])) x++;
+						token_vector.emplace_back(std::make_unique<syntax_tree_node>(source.substr()));
+					}
+					else throw std::exception("Syntax error.");
+				}
+			}
+		}
 		}
 	}
 }
