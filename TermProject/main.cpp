@@ -60,53 +60,53 @@ int main(int argc, char* argv[]) {
 				if (p.second == '=') {
 					switch (p.first) {
 					case '+':
-						token_vector.emplace_back(std::make_unique<syntax_tree_node>("+="sv)); i += 2;
+						token_vector.emplace_back(std::make_unique<syntax_tree_node>("+="sv, SYMBOL::plusequal)); i += 2;
 						break;
 					case '-':
-						token_vector.emplace_back(std::make_unique<syntax_tree_node>("-="sv)); i += 2;
+						token_vector.emplace_back(std::make_unique<syntax_tree_node>("-="sv, SYMBOL::minusequal)); i += 2;
 						break;
 					case '*':
-						token_vector.emplace_back(std::make_unique<syntax_tree_node>("*="sv)); i += 2;
+						token_vector.emplace_back(std::make_unique<syntax_tree_node>("*="sv, SYMBOL::starequal)); i += 2;
 						break;
 					case '/':
-						token_vector.emplace_back(std::make_unique<syntax_tree_node>("/="sv)); i += 2;
+						token_vector.emplace_back(std::make_unique<syntax_tree_node>("/="sv, SYMBOL::slashequal)); i += 2;
 						break;
 					case '%':
-						token_vector.emplace_back(std::make_unique<syntax_tree_node>("%="sv)); i += 2;
+						token_vector.emplace_back(std::make_unique<syntax_tree_node>("%="sv, SYMBOL::percentequal)); i += 2;
 						break;
 					case '=':
-						token_vector.emplace_back(std::make_unique<syntax_tree_node>("=="sv)); i += 2;
+						token_vector.emplace_back(std::make_unique<syntax_tree_node>("=="sv, SYMBOL::equalequal)); i += 2;
 						break;
 					case '!':
-						token_vector.emplace_back(std::make_unique<syntax_tree_node>("!="sv)); i += 2;
+						token_vector.emplace_back(std::make_unique<syntax_tree_node>("!="sv, SYMBOL::notequal)); i += 2;
 						break;
 					case '<':
-						token_vector.emplace_back(std::make_unique<syntax_tree_node>("<="sv)); i += 2;
+						token_vector.emplace_back(std::make_unique<syntax_tree_node>("<="sv, SYMBOL::lessequal)); i += 2;
 						break;
 					case '>':
-						token_vector.emplace_back(std::make_unique<syntax_tree_node>(">="sv)); i += 2;
+						token_vector.emplace_back(std::make_unique<syntax_tree_node>(">="sv, SYMBOL::greaterequal)); i += 2;
 						break;
 					default: flag = true;
 					}
 				}
 				else if (p == P{ '+', '+' }) {
-
+					token_vector.emplace_back(std::make_unique<syntax_tree_node>("++"sv, SYMBOL::plusplus));
 					i += 2;
 				}
 				else if (p == P{ '-', '-' }) {
-
+					token_vector.emplace_back(std::make_unique<syntax_tree_node>("--"sv, SYMBOL::minusminus));
 					i += 2;
 				}
 				else if (p == P{ '/', '/' }) {
-
+					token_vector.emplace_back(std::make_unique<syntax_tree_node>("//"sv, SYMBOL::slashslash));
 					i += 2;
 				}
 				else if (p == P{ '&', '&' }) {
-
+					token_vector.emplace_back(std::make_unique<syntax_tree_node>("&&"sv, SYMBOL::andand));
 					i += 2;
 				}
 				else if (p == P{ '|', '|' }) {
-
+					token_vector.emplace_back(std::make_unique<syntax_tree_node>("||"sv, SYMBOL::oror));
 					i += 2;
 				}
 				else flag = true;
@@ -114,66 +114,66 @@ int main(int argc, char* argv[]) {
 			if (flag) {
 				switch (source[i]) {
 				case '=':
-					token_vector.emplace_back(std::make_unique<syntax_tree_node>("="sv)); i++;
+					token_vector.emplace_back(std::make_unique<syntax_tree_node>("="sv, SYMBOL::equal)); i++;
 					break;
 				case '+':
-					token_vector.emplace_back(std::make_unique<syntax_tree_node>("+"sv)); i++;
+					token_vector.emplace_back(std::make_unique<syntax_tree_node>("+"sv, SYMBOL::plus)); i++;
 					break;
 				case '-':
-					token_vector.emplace_back(std::make_unique<syntax_tree_node>("-"sv)); i++;
+					token_vector.emplace_back(std::make_unique<syntax_tree_node>("-"sv, SYMBOL::minus)); i++;
 					break;
 				case '*':
-					token_vector.emplace_back(std::make_unique<syntax_tree_node>("*"sv)); i++;
+					token_vector.emplace_back(std::make_unique<syntax_tree_node>("*"sv, SYMBOL::star)); i++;
 					break;
 				case '/':
-					token_vector.emplace_back(std::make_unique<syntax_tree_node>("/"sv)); i++;
+					token_vector.emplace_back(std::make_unique<syntax_tree_node>("/"sv, SYMBOL::slash)); i++;
 					break;
 				case '%':
-					token_vector.emplace_back(std::make_unique<syntax_tree_node>("%"sv)); i++;
+					token_vector.emplace_back(std::make_unique<syntax_tree_node>("%"sv, SYMBOL::percent)); i++;
 					break;
 				case 92: // \ //
-					token_vector.emplace_back(std::make_unique<syntax_tree_node>("\\"sv)); i++;
+					token_vector.emplace_back(std::make_unique<syntax_tree_node>("\\"sv, SYMBOL::backslash)); i++;
 					break;
 				case '!':
-					token_vector.emplace_back(std::make_unique<syntax_tree_node>("!"sv)); i++;
+					token_vector.emplace_back(std::make_unique<syntax_tree_node>("!"sv, SYMBOL::not)); i++;
 					break;
 				case '<':
-					token_vector.emplace_back(std::make_unique<syntax_tree_node>("<"sv)); i++;
+					token_vector.emplace_back(std::make_unique<syntax_tree_node>("<"sv, SYMBOL::less)); i++;
 					break;
 				case '>':
-					token_vector.emplace_back(std::make_unique<syntax_tree_node>(">"sv)); i++;
+					token_vector.emplace_back(std::make_unique<syntax_tree_node>(">"sv, SYMBOL::greater)); i++;
 					break;
 				case '(':
-					token_vector.emplace_back(std::make_unique<syntax_tree_node>("("sv)); i++;
+					token_vector.emplace_back(std::make_unique<syntax_tree_node>("("sv, SYMBOL::openparen)); i++;
 					break;
 				case ')':
-					token_vector.emplace_back(std::make_unique<syntax_tree_node>(")"sv)); i++;
+					token_vector.emplace_back(std::make_unique<syntax_tree_node>(")"sv, SYMBOL::closeparen)); i++;
 					break;
 				case '{':
-					token_vector.emplace_back(std::make_unique<syntax_tree_node>("{"sv)); i++;
+					token_vector.emplace_back(std::make_unique<syntax_tree_node>("{"sv, SYMBOL::opencurly)); i++;
 					break;
 				case '}':
-					token_vector.emplace_back(std::make_unique<syntax_tree_node>("}"sv)); i++;
+					token_vector.emplace_back(std::make_unique<syntax_tree_node>("}"sv, SYMBOL::closecurly)); i++;
 					break;
 				case '[':
-					token_vector.emplace_back(std::make_unique<syntax_tree_node>("["sv)); i++;
+					token_vector.emplace_back(std::make_unique<syntax_tree_node>("["sv, SYMBOL::openbrack)); i++;
 					break;
 				case ']':
-					token_vector.emplace_back(std::make_unique<syntax_tree_node>("]"sv)); i++;
+					token_vector.emplace_back(std::make_unique<syntax_tree_node>("]"sv, SYMBOL::closebrack)); i++;
 					break;
 				case '.':
-					token_vector.emplace_back(std::make_unique<syntax_tree_node>("."sv)); i++;
+					token_vector.emplace_back(std::make_unique<syntax_tree_node>("."sv, SYMBOL::dot)); i++;
 					break;
 				case ',':
-					token_vector.emplace_back(std::make_unique<syntax_tree_node>(","sv)); i++;
+					token_vector.emplace_back(std::make_unique<syntax_tree_node>(","sv, SYMBOL::comma)); i++;
 					break;
 				case ';':
-					token_vector.emplace_back(std::make_unique<syntax_tree_node>(";"sv)); i++;
+					token_vector.emplace_back(std::make_unique<syntax_tree_node>(";"sv, SYMBOL::semicolon)); i++;
 					break;
 				case (char)34: { // " //
 					uint64_t x = 1;
 					while (i + x < source.size() && !(source[i + x] == (char)34 && source[i + x - 1] != (char)92)) x++;
-					token_vector.emplace_back(std::make_unique<syntax_tree_node>(substr(source, i, x + 1)));
+					token_vector.emplace_back(std::make_unique<syntax_tree_node>(substr(source, i, x + 1), SYMBOL::string));
 					i += x + 1;
 				}
 					break;
@@ -181,13 +181,15 @@ int main(int argc, char* argv[]) {
 					if (is_identifier_first(source[i])) {
 						uint64_t x = 1;
 						while (is_identifier_middle(source[i + x])) x++;
-						token_vector.emplace_back(std::make_unique<syntax_tree_node>(substr(source, i, x)));
+						auto const sv = substr(source, i, x);
+						if(sv == "int"sv || sv == "float"sv)token_vector.emplace_back(std::make_unique<syntax_tree_node>(sv, SYMBOL::type));
+						else token_vector.emplace_back(std::make_unique<syntax_tree_node>(sv, SYMBOL::identifier));
 						i += x;
 					}
 					else if (is_number(source[i])) {
 						uint64_t x = 1;
 						while (is_number(source[i + x])) x++;
-						token_vector.emplace_back(std::make_unique<syntax_tree_node>(substr(source, i, x)));
+						token_vector.emplace_back(std::make_unique<syntax_tree_node>(substr(source, i, x), SYMBOL::number));
 						i += x;
 					}
 					else {
@@ -207,6 +209,10 @@ int main(int argc, char* argv[]) {
 	A:
 	std::cout << "Well done!" << std::endl;
 	for (auto&& cur : token_vector) {
-		std::cout << cur->data << std::endl;
+		std::cout << cur->data << ": "; print_SYMBOL(cur->symbol);
 	}
+
+	/* TOKENIZING COMPLETE */
+
+	
 }
