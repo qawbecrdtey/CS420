@@ -44,10 +44,14 @@ enum class SYMBOL {
 	dot,
 	comma,
 	semicolon,
-	string,
+	string_literal,
 	identifier, type,
 	number,
+
 	// TODO : Fill in nonterminals.
+
+	Constant,
+	Primary_expression,
 };
 
 void print_SYMBOL(SYMBOL symbol) {
@@ -86,15 +90,18 @@ void print_SYMBOL(SYMBOL symbol) {
 	case SYMBOL::dot: std::cout << "dot" << std::endl; break;
 	case SYMBOL::comma: std::cout << "comma" << std::endl; break;
 	case SYMBOL::semicolon: std::cout << "semicolon" << std::endl; break;
-	case SYMBOL::string: std::cout << "string" << std::endl; break;
+	case SYMBOL::string_literal: std::cout << "string" << std::endl; break;
 	case SYMBOL::identifier: std::cout << "identifier" << std::endl; break;
 	case SYMBOL::type: std::cout << "type" << std::endl; break;
 	case SYMBOL::number: std::cout << "number" << std::endl; break;
 
 		// TODO : Fill in nonterminals.
 
+	case SYMBOL::Constant: std::cout << "Constant" << std::endl; break;
+	case SYMBOL::Primary_expression: std::cout << "Primary_expression" << std::endl; break;
+
 	default:
-		throw std::exception("Unexpected enum.");
+		throw std::exception("Unexpected enum value.");
 	}
 }
 

@@ -98,8 +98,10 @@ int main(int argc, char* argv[]) {
 					i += 2;
 				}
 				else if (p == P{ '/', '/' }) {
-					token_vector.emplace_back(std::make_unique<syntax_tree_node>("//"sv, SYMBOL::slashslash));
-					i += 2;
+					uint64_t x = 1;
+					while (source[i + x] != '\n' && source[i + x] != '\0') x++;
+					token_vector.emplace_back(std::make_unique<syntax_tree_node>(substr(source, i, x + 1), SYMBOL::slashslash));
+					i += x + 1;
 				}
 				else if (p == P{ '&', '&' }) {
 					token_vector.emplace_back(std::make_unique<syntax_tree_node>("&&"sv, SYMBOL::andand));
@@ -173,7 +175,7 @@ int main(int argc, char* argv[]) {
 				case (char)34: { // " //
 					uint64_t x = 1;
 					while (i + x < source.size() && !(source[i + x] == (char)34 && source[i + x - 1] != (char)92)) x++;
-					token_vector.emplace_back(std::make_unique<syntax_tree_node>(substr(source, i, x + 1), SYMBOL::string));
+					token_vector.emplace_back(std::make_unique<syntax_tree_node>(substr(source, i, x + 1), SYMBOL::string_literal));
 					i += x + 1;
 				}
 					break;
@@ -206,8 +208,9 @@ int main(int argc, char* argv[]) {
 		}
 	}
 
-	A:
+A:
 	std::cout << "Well done!" << std::endl;
+	
 	for (auto&& cur : token_vector) {
 		std::cout << cur->data << ": "; print_SYMBOL(cur->symbol);
 	}

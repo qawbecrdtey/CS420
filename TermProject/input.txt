@@ -8,7 +8,7 @@ float avg(int length, int *value) {
 
 	return (total / length);
 }
-
+// start of a main function
 int main(void) {
 	int count, i, total;
 	int record[5];
@@ -23,7 +23,7 @@ int main(void) {
 		printf("%d\n", record[i]);
 	}
 
-	printf("\nStart...\n");
+	printf("\nStart...\n"); // Hi
 
 	for(i = 0; i < count; i++) {
 		average = avg(i + 1, record);
