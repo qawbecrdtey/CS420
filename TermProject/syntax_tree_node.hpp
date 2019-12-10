@@ -32,7 +32,9 @@ enum class SYMBOL {
 	slash,
 	percent,
 	backslash,
-	not,
+	exclamation,
+	question,
+	colon,
 	less,
 	greater,
 	openparen,
@@ -45,45 +47,108 @@ enum class SYMBOL {
 	comma,
 	semicolon,
 	string_literal,
-	identifier, type,
+    break_keyword,
+    continue_keyword,
+    else_keyword,
+    float_keyword,
+    for_keyword,
+    if_keyword,
+    int_keyword,
+	return_keyword,
+	void_keyword,
+	while_keyword,
+    identifier,
 	number,
 
 	// TODO : Fill in nonterminals.
 
+	Type_specifier,                 //  ::= float_keyword
+	                                //  |   int_keyword
+	                                //  |   void_keyword
 	Int_number,						//	::= number
 	Float_number,					//	::= number . number
-									//	|	number . 
+									//	|	number .
 									//	|	. number
 	Constant,						//	::= Int_number
 									//	|	Float_number
-	Primary_expression,
-	Postfix_expression,
-	Argument_expression_list,
-	Argument_expression,
-	Unary_expression,
-	Unary_operator,
-	Multiplicative_expression,
-	Additive_expression,
-	Shift_expression,
-	Relational_expression,
-	Equality_expression,
-	Assignment_expression, // conditional_expression <- Equality_expression
-	Declaration,
-	Init_declarator_list,
-	Init_declarator,
-	Declarator, // declarator ::= identifier, initializer <- Assignment_expression
-	Statement,
-	Compound_statement,
-	Block_item_list,
-	Block_item,
-	Expression_statement,
-	Selection_statement,
-	Iteration_statement,
-	Jump_statement,
-	External_declaration,
-	Function_definition,
-	Declaration_list,
-
+	Primary_expression,             //  ::= identifier
+	                                //  |   Constant
+	                                //  |   ( Expression )
+	Postfix_expression,             //  ::= Primary_expression
+	                                //  |   Postfix_expression [ Expression ]
+	                                //  |   Postfix_expression ( Argument_expression_list* )
+	                                //  |   Postfix_expression plusplus
+	                                //  |   Postfix_expression minusminus
+	Argument_expression_list,       //  ::= Assignment_expression
+	                                //  |   Argument_expression_list , Assignment_expression
+	Unary_expression,               //  ::= Postfix_expression
+	                                //  |   plusplus Unary_expression
+	                                //  |   minusminus Unary_expression
+	                                //  |   Unary_operator Unary_expression
+	Unary_operator,                 //  ::= star
+	                                //  |   plus
+	                                //  |   minus
+	                                //  |   exclamation
+	Multiplicative_expression,      //  ::= Unary_expression
+	                                //  |   Multiplicative_expression star Unary_expression
+	                                //  |   Multiplicative_expression slash Unary_expression
+	                                //  |   Multiplicative_expression percent Unary_expression
+	Additive_expression,            //  ::= Multiplicative_expression
+	                                //  |   Additive_expression plus Multiplicative_expression
+	                                //  |   Additive_expression minus Multiplicative_expression
+	Relational_expression,          //  ::= Additive_expression
+	                                //  |   Relational_expression less Additive_expression
+	                                //  |   Relational_expression greater Additive_expression
+	                                //  |   Relational_expression lessequal Additive_expression
+	                                //  |   Relational_expression greaterequal Additive_expression
+	Equality_expression,            //  |   Relational_expression
+	                                //  |   Equality_expression equalequal Relational_expression
+	                                //  |   Equality_expression notequal Relational_expression
+    Logical_AND_expression,         //  ::= Equality_expression
+                                    //  |   Logical_AND_expression andand Equality_expression
+    Logical_OR_expression,          //  ::= Logical_AND_expression
+                                    //  |   Logical_OR_expression oror Logical_AND_expression
+    Conditional_expression,         //  ::= Logical_OR_expression
+                                    //  |   Logical_OR_expression question Expression colon Conditional_expression
+	Assignment_expression,          //  ::= Conditional_expression
+	                                //  |   Unary_expression Assignment_operator Assignment_expression
+    Assignment_operator,            //  ::= equal
+                                    //  |   starequal
+                                    //  |   slashequal
+                                    //  |   percentequal
+                                    //  |   plusequal
+                                    //  |   minusequal
+	Expression,                     //  ::= Assignment_expression
+	                                //  |   Expression , Assignment_expression
+    Constant_expression,            //  ::= Conditional_expression
+    Declaration,                    //  ::= Type_specifier init_declarator_list*
+	Init_declarator_list,           //  ::= Init_declarator
+	                                //  |   Init_declarator_list , Init_declarator
+	Init_declarator,                //  ::= Declarator
+	                                //  |   Declarator = Assignment_expression
+	Declarator,                     //  ::= identifier
+	Statement,                      //  ::= Compound_statement
+	                                //  |   Expression_statement
+	                                //  |   Selection_statement
+	                                //  |   Iteration_statement
+	                                //  |   Jump_statement
+	Compound_statement,             //  ::= { Block_item_list* }
+	Block_item_list,                //  ::= Block_item
+	                                //  |   Block_item_list Block_item
+	Block_item,                     //  ::= Declaration
+	                                //  |   Statement
+	Expression_statement,           //  ::= Expression* ;
+	Selection_statement,            //  ::= if_keyword ( Expression ) Statement
+	                                //  |   if_keyword ( Expression ) Statement else_keyword Statement
+	Iteration_statement,            //  ::= while_keyword ( Expression ) Statement
+	                                //  |   for_keyword ( Expression_opt ; Expression_opt ; Expression_opt ) Statement
+	                                //  |   for_keyword ( declaration Expression_opt ; Expression_opt ) Statement
+	Jump_statement,                 //  ::= continue_keyword ;
+	                                //  |   break_keyword ;
+	                                //  |   return Expression_opt ;
+	External_declaration,           //  ::= Type_specifier Identifier Declaration_list* Compound_statement
+	Declaration_list,               //  ::= Declaration
+	                                //  |   Declaration_list Declaration
 };
 
 void print_SYMBOL(SYMBOL symbol) {
@@ -110,7 +175,9 @@ void print_SYMBOL(SYMBOL symbol) {
 	case SYMBOL::slash: std::cout << "slash" << std::endl; break;
 	case SYMBOL::percent: std::cout << "percent" << std::endl; break;
 	case SYMBOL::backslash: std::cout << "backslash" << std::endl; break;
-	case SYMBOL::not: std::cout << "not" << std::endl; break;
+	case SYMBOL::exclamation: std::cout << "exclamation" << std::endl; break;
+    case SYMBOL::question: std::cout << "question" << std::endl; break;
+    case SYMBOL::colon: std::cout << "colon" << std::endl; break;
 	case SYMBOL::less: std::cout << "less" << std::endl; break;
 	case SYMBOL::greater: std::cout << "greater" << std::endl; break;
 	case SYMBOL::openparen: std::cout << "openparen" << std::endl; break;
@@ -123,17 +190,26 @@ void print_SYMBOL(SYMBOL symbol) {
 	case SYMBOL::comma: std::cout << "comma" << std::endl; break;
 	case SYMBOL::semicolon: std::cout << "semicolon" << std::endl; break;
 	case SYMBOL::string_literal: std::cout << "string" << std::endl; break;
+	case SYMBOL::break_keyword: std::cout << "break_keyword" << std::endl; break;
+	case SYMBOL::continue_keyword: std::cout << "continue_keyword" << std::endl; break;
+	case SYMBOL::else_keyword: std::cout << "else_keyword" << std::endl; break;
+	case SYMBOL::float_keyword: std::cout << "float_type" << std::endl; break;
+	case SYMBOL::for_keyword: std::cout << "for_keyword" << std::endl; break;
+	case SYMBOL::if_keyword: std::cout << "if_keyword" << std::endl; break;
+	case SYMBOL::int_keyword: std::cout << "int_type" << std::endl; break;
+	case SYMBOL::return_keyword: std::cout << "return_keyword" << std::endl; break;
+	case SYMBOL::void_keyword: std::cout << "void_keyword" << std::endl; break;
+	case SYMBOL::while_keyword: std::cout << "while_keyword" << std::endl; break;
 	case SYMBOL::identifier: std::cout << "identifier" << std::endl; break;
-	case SYMBOL::type: std::cout << "type" << std::endl; break;
 	case SYMBOL::number: std::cout << "number" << std::endl; break;
 
 		// TODO : Fill in nonterminals.
 
-	case SYMBOL::Constant: std::cout << "Constant" << std::endl; break;
-	case SYMBOL::Primary_expression: std::cout << "Primary_expression" << std::endl; break;
+	// case SYMBOL::Constant: std::cout << "Constant" << std::endl; break;
+	// case SYMBOL::Primary_expression: std::cout << "Primary_expression" << std::endl; break;
 
 	default:
-		throw std::exception("Unexpected enum value.");
+		throw std::exception();
 	}
 }
 
