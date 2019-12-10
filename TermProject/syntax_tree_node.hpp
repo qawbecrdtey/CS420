@@ -126,7 +126,27 @@ enum class SYMBOL {
 	                                //  |   Init_declarator_list , Init_declarator
 	Init_declarator,                //  ::= Declarator
 	                                //  |   Declarator = Assignment_expression
-	Declarator,                     //  ::= identifier
+	Declarator,                     //  ::= Pointer* Direct_declarator
+	Direct_declarator,              //  ::= identifier
+	                                //  |   ( Declarator )
+	                                //  |   Direct_declarator [ Type_qualifier_list* Assignment_expression ]
+	                                //  |   Direct_declarator ( Parameter_list )
+	                                //  |   Direct_declarator ( Identifier_list* )
+    Pointer,                        //  ::= star Type_qualifier_list*
+                                    //  |   star Type_qualifier_list* pointer
+    Type_qualifier_list,            //  ::= Type_qualifier
+                                    //  |   Type_qualifier_list Type_qualifier
+    Parameter_list,                 //  ::= Parameter_declaration
+                                    //  |   Parameter_list , Parameter_declaration
+    Parameter_declaration,          //  ::= Declaration_specifiers Declarator
+                                    //  |   Declaration_specifiers Abstract_declarator
+    Identifier_list,                //  ::= identifier
+                                    //  |   Identifier_list, identifier
+    Abstract_declarator,            //  ::= Pointer
+                                    //  |   Pointer* Direct_abstract_declarator
+    Direct_abstract_declarator,     //  ::= ( Abstract_declarator )
+                                    //  |   Direct_abstract_declarator* [ Assignment_expression* ]
+                                    //  |   Direct_abstract_declarator* [ Parameter_type_list* ]
 	Statement,                      //  ::= Compound_statement
 	                                //  |   Expression_statement
 	                                //  |   Selection_statement
