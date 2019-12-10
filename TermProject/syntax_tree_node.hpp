@@ -50,8 +50,40 @@ enum class SYMBOL {
 
 	// TODO : Fill in nonterminals.
 
-	Constant,
+	Int_number,						//	::= number
+	Float_number,					//	::= number . number
+									//	|	number . 
+									//	|	. number
+	Constant,						//	::= Int_number
+									//	|	Float_number
 	Primary_expression,
+	Postfix_expression,
+	Argument_expression_list,
+	Argument_expression,
+	Unary_expression,
+	Unary_operator,
+	Multiplicative_expression,
+	Additive_expression,
+	Shift_expression,
+	Relational_expression,
+	Equality_expression,
+	Assignment_expression, // conditional_expression <- Equality_expression
+	Declaration,
+	Init_declarator_list,
+	Init_declarator,
+	Declarator, // declarator ::= identifier, initializer <- Assignment_expression
+	Statement,
+	Compound_statement,
+	Block_item_list,
+	Block_item,
+	Expression_statement,
+	Selection_statement,
+	Iteration_statement,
+	Jump_statement,
+	External_declaration,
+	Function_definition,
+	Declaration_list,
+
 };
 
 void print_SYMBOL(SYMBOL symbol) {
