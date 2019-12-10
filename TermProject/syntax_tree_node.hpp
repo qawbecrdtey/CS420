@@ -141,11 +141,11 @@ enum class SYMBOL {
 	Selection_statement,            //  ::= if_keyword ( Expression ) Statement
 	                                //  |   if_keyword ( Expression ) Statement else_keyword Statement
 	Iteration_statement,            //  ::= while_keyword ( Expression ) Statement
-	                                //  |   for_keyword ( Expression_opt ; Expression_opt ; Expression_opt ) Statement
-	                                //  |   for_keyword ( declaration Expression_opt ; Expression_opt ) Statement
+	                                //  |   for_keyword ( Expression* ; Expression* ; Expression* ) Statement
+	                                //  |   for_keyword ( declaration Expression* ; Expression* ) Statement
 	Jump_statement,                 //  ::= continue_keyword ;
 	                                //  |   break_keyword ;
-	                                //  |   return Expression_opt ;
+	                                //  |   return Expression* ;
 	External_declaration,           //  ::= Type_specifier Identifier Declaration_list* Compound_statement
 	Declaration_list,               //  ::= Declaration
 	                                //  |   Declaration_list Declaration
