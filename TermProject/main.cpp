@@ -1,3 +1,4 @@
+#include <exception>
 #include <fstream>
 #include <iostream>
 #include <string>
@@ -137,8 +138,14 @@ int main(int argc, char* argv[]) {
 					token_vector.emplace_back(std::make_unique<syntax_tree_node>("\\"sv, SYMBOL::backslash)); i++;
 					break;
 				case '!':
-					token_vector.emplace_back(std::make_unique<syntax_tree_node>("!"sv, SYMBOL::not)); i++;
+					token_vector.emplace_back(std::make_unique<syntax_tree_node>("!"sv, SYMBOL::exclamation)); i++;
 					break;
+				case '?':
+                    token_vector.emplace_back(std::make_unique<syntax_tree_node>("?"sv, SYMBOL::question)); i++;
+                    break;
+                case ':':
+                    token_vector.emplace_back(std::make_unique<syntax_tree_node>(":"sv, SYMBOL::colon)); i++;
+                    break;
 				case '<':
 					token_vector.emplace_back(std::make_unique<syntax_tree_node>("<"sv, SYMBOL::less)); i++;
 					break;
@@ -184,7 +191,16 @@ int main(int argc, char* argv[]) {
 						uint64_t x = 1;
 						while (is_identifier_middle(source[i + x])) x++;
 						auto const sv = substr(source, i, x);
-						if(sv == "int"sv || sv == "float"sv)token_vector.emplace_back(std::make_unique<syntax_tree_node>(sv, SYMBOL::type));
+                        if (sv == "break"sv) token_vector.emplace_back(std::make_unique<syntax_tree_node>(sv, SYMBOL::break_keyword));
+                        else if (sv == "continue"sv) token_vector.emplace_back(std::make_unique<syntax_tree_node>(sv, SYMBOL::continue_keyword));
+                        else if (sv == "else"sv) token_vector.emplace_back(std::make_unique<syntax_tree_node>(sv, SYMBOL::else_keyword));
+						else if (sv == "float"sv) token_vector.emplace_back(std::make_unique<syntax_tree_node>(sv, SYMBOL::float_keyword));
+                        else if (sv == "for"sv) token_vector.emplace_back(std::make_unique<syntax_tree_node>(sv, SYMBOL::for_keyword));
+                        else if (sv == "if"sv) token_vector.emplace_back(std::make_unique<syntax_tree_node>(sv, SYMBOL::if_keyword));
+						else if (sv == "int"sv) token_vector.emplace_back(std::make_unique<syntax_tree_node>(sv, SYMBOL::int_keyword));
+                        else if (sv == "return"sv) token_vector.emplace_back(std::make_unique<syntax_tree_node>(sv, SYMBOL::return_keyword));
+                        else if (sv == "void"sv) token_vector.emplace_back(std::make_unique<syntax_tree_node>(sv, SYMBOL::void_keyword));
+                        else if (sv == "while"sv) token_vector.emplace_back(std::make_unique<syntax_tree_node>(sv, SYMBOL::while_keyword));
 						else token_vector.emplace_back(std::make_unique<syntax_tree_node>(sv, SYMBOL::identifier));
 						i += x;
 					}
@@ -196,7 +212,7 @@ int main(int argc, char* argv[]) {
 					}
 					else {
 						std::cout << "Unexpected character " << source[i] << std::endl;
-						throw std::exception("Syntax error : Unexpected character.");
+						throw std::exception();
 					}
 				}
 			}
@@ -204,7 +220,7 @@ int main(int argc, char* argv[]) {
 			break;
 		default:
 			std::cout << "Unexpected character " << source[i] << std::endl;
-			throw std::exception("Syntax error.");
+			throw std::exception();
 		}
 	}
 
