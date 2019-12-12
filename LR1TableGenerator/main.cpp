@@ -13,6 +13,8 @@ nonterminal ::= ... >.<
 
 start_symbol >.<
 
+WARNING : The input file should be LF, not CRLF.
+
 */
 
 struct product {
@@ -61,11 +63,15 @@ int main(int argc, char* argv[]) {
     while(true) {
 		std::string nonterm, sym;
 		ss >> nonterm >> sym;
-		if (sym == ">.<") { 
+		std::cout << nonterm << ' ' << sym << std::endl;
+		if (sym == ">.<") {
 			start_symbol = nonterm;
+			std::cout << "HI" << std::endl;
 			break;
 		}
-		else if (sym != "::=") return 1;
+		else if (sym != "::=") {
+			return 1;
+		}
 		std::string const from = nonterm;
 		std::vector<std::string> v;
 		while (true) {
@@ -85,4 +91,13 @@ int main(int argc, char* argv[]) {
 			v.emplace_back(nonterm);
 		}
     }
+
+	std::cout << "Number of productions : " << product_vector.size() << std::endl;
+	for (auto& now : product_vector) {
+		std::cout << now.from << " ::= ";
+		for (auto& cur : now.to) {
+			std::cout << cur << ' ';
+		}
+		std::cout << std::endl;
+	}
 }
