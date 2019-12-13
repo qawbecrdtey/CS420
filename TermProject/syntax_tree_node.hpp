@@ -62,6 +62,12 @@ enum class SYMBOL {
 
 	// TODO : Fill in nonterminals.
 
+	S',								//	::= S
+	S,								//	::= External_declaration_list
+	External_declaration_list,		//	::= External_declaration_list External_declaration
+	External_declaration,           //  ::= Type_specifier Identifier Declaration_list* Compound_statement
+	Declaration_list,               //  ::= Declaration
+	                                //  |   Declaration_list Declaration
 	Type_specifier,                 //  ::= float_keyword
 	                                //  |   int_keyword
 	                                //  |   void_keyword
@@ -166,9 +172,6 @@ enum class SYMBOL {
 	Jump_statement,                 //  ::= continue_keyword ;
 	                                //  |   break_keyword ;
 	                                //  |   return Expression* ;
-	External_declaration,           //  ::= Type_specifier Identifier Declaration_list* Compound_statement
-	Declaration_list,               //  ::= Declaration
-	                                //  |   Declaration_list Declaration
 };
 
 void print_SYMBOL(SYMBOL symbol) {
