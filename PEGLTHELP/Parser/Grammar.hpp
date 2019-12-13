@@ -117,23 +117,28 @@ namespace Parser {
         struct Primary_expression : tao::pegtl::sor<
             identifier,
             Constant,
-            tao::pegtl::seq<openparen, Expression, closeparen>
+            tao::pegtl::seq<openparen, space_s, Expression, space_s, closeparen>
         > {};
 
         struct Argument_expression_list;
+        struct Postfix_expression_R;
         struct Postfix_expression : tao::pegtl::sor<
-            tao::pegtl::seq<Postfix_expression, openbrack, Expression, closebrack>,
-            tao::pegtl::seq<Postfix_expression, openparen, Argument_expression_list, closeparen>,
-            tao::pegtl::seq<Postfix_expression, openparen, closeparen>,
-            tao::pegtl::seq<Postfix_expression, plusplus>,
-            tao::pegtl::seq<Postfix_expression, minusminus>,
+            tao::pegtl::seq<Primary_expression, space_s, Postfix_expression_R>,
             Primary_expression
         > {};
         
+        struct Postfix_expression_R : tao::pegtl::sor<
+            tao::pegtl::seq<openbrack, space_s, Expression, space_s, closebrack>,
+            tao::pegtl::seq<openparen, space_s, Argument_expression_list, space_s, closeparen>,
+            tao::pegtl::seq<openparen, space_s, closeparen>,
+            plusplus,
+            minusminus
+        > {};
+        
         struct Assignment_expression;
-        struct Argument_expression_list : tao::pegtl::sor<
-            tao::pegtl::seq<Argument_expression_list, comma, Assignment_expression>,
-            Assignment_expression
+        struct Argument_expression_list : tao::pegtl::list<
+            Assignment_expression,
+            tao::pegtl::seq<tao::pegtl::pad<comma, space>>
         > {};
 
         struct Unary_operator;
@@ -146,45 +151,56 @@ namespace Parser {
 
         struct Unary_operator : tao::pegtl::sor<star, plus, minus, exclamation> {};
 
-        struct Multiplicative_expression : tao::pegtl::sor<
-            tao::pegtl::seq<Multiplicative_expression, star, Unary_expression>,
-            tao::pegtl::seq<Multiplicative_expression, slash, Unary_expression>,
-            tao::pegtl::seq<Multiplicative_expression, percent, Unary_expression>,
-            Unary_expression
+        struct Multiplicative_expression : tao::pegtl::list<
+            Unary_expression,
+            tao::pegtl::pad<
+                tao::pegtl::sor<star, slash, percent>,
+                space
+            >
         > {};
 
-        struct Additive_expression : tao::pegtl::sor<
-            tao::pegtl::seq<Additive_expression, plus, Multiplicative_expression>,
-            tao::pegtl::seq<Additive_expression, minus, Multiplicative_expression>,
-            Multiplicative_expression
+        struct Additive_expression : tao::pegtl::list<
+            Multiplicative_expression,
+            tao::pegtl::pad<
+                tao::pegtl::sor<plus, minus>,
+                space
+            >
         > {};
 
-        struct Relational_expression : tao::pegtl::sor<
-            tao::pegtl::seq<Relational_expression, less, Additive_expression>,
-            tao::pegtl::seq<Relational_expression, greater, Additive_expression>,
-            tao::pegtl::seq<Relational_expression, lessequal, Additive_expression>,
-            tao::pegtl::seq<Relational_expression, greaterequal, Additive_expression>,
-            Additive_expression
+        struct Relational_expression : tao::pegtl::list<
+            Additive_expression,
+            tao::pegtl::pad<
+                tao::pegtl::sor<lessequal, greaterequal, less, greater>,
+                space
+            >
         > {};
 
-        struct Equality_expression : tao::pegtl::sor<
-            tao::pegtl::seq<Equality_expression, equalequal, Relational_expression>,
-            tao::pegtl::seq<Equality_expression, notequal, Relational_expression>,
-            Relational_expression
+        struct Equality_expression : tao::pegtl::list<
+            Relational_expression,
+            tao::pegtl::pad<
+                tao::pegtl::sor<equalequal, notequal>,
+                space
+            >
         > {};
 
-        struct Logical_AND_expression : tao::pegtl::sor<
-            tao::pegtl::seq<Logical_AND_expression, andand, Equality_expression>,
-            Equality_expression
+        struct Logical_AND_expression : tao::pegtl::list<
+            Equality_expression,
+            tao::pegtl::pad<andand, space>
         > {};
 
-        struct Logical_OR_expression : tao::pegtl::sor<
-            tao::pegtl::seq<Logical_OR_expression, oror, Equality_expression>,
-            Logical_AND_expression
+        struct Logical_OR_expression : tao::pegtl::list<
+            Logical_AND_expression,
+            tao::pegtl::pad<oror, space>
         > {};
 
         struct Conditional_expression : tao::pegtl::sor<
-            tao::pegtl::seq<Logical_OR_expression, question, Expression, colon, Conditional_expression>,
+            tao::pegtl::seq<
+                Logical_OR_expression, space_s,
+                question, space_s,
+                Expression, space_s,
+                colon, space_s,
+                Conditional_expression
+            >,
             Logical_OR_expression
         > {};
 
@@ -196,86 +212,105 @@ namespace Parser {
 
         struct Assignment_operator : tao::pegtl::sor<equal, starequal, slashequal, percentequal, plusequal, minusequal> {};
         
-        struct Expression : tao::pegtl::sor<
-            tao::pegtl::seq<Expression, comma, Assignment_expression>,
-            Assignment_expression
+        struct Expression : tao::pegtl::list<
+            Assignment_expression,
+            tao::pegtl::pad<comma, space>
         > {};
 
         struct Constant_expression : Conditional_expression {};
 
         struct Init_declarator_list;
-        struct Declaration : tao::pegtl::sor<
-            tao::pegtl::seq<Type_specifier, Init_declarator_list>,
-            Type_specifier
+        struct Declaration : tao::pegtl::seq<
+            Type_specifier,
+            tao::pegtl::opt<Init_declarator_list>
         > {};
 
         struct Init_declarator;
-        struct Init_declarator_list : tao::pegtl::sor<
-            tao::pegtl::seq<Init_declarator_list, comma, Init_declarator>,
-            Init_declarator
+        struct Init_declarator_list : tao::pegtl::list<
+            Init_declarator,
+            tao::pegtl::pad<comma, space>
         > {};
 
         struct Declarator;
-        struct Init_declarator : tao::pegtl::sor<
-            tao::pegtl::seq<Declarator, equal, Assignment_expression>,
-            Declarator
+        struct Init_declarator : tao::pegtl::seq<
+            Declarator,
+            tao::pegtl::opt<equal, Assignment_expression>
         > {};
 
         struct Pointer;
         struct Direct_declarator;
-        struct Declarator : tao::pegtl::sor<
-            tao::pegtl::seq<Pointer, Direct_declarator>,
+        struct Declarator : tao::pegtl::seq<
+            tao::pegtl::opt<Pointer>,
+            space_s,
             Direct_declarator
         > {};
 
         struct Type_qualifier_list;
         struct Parameter_list;
         struct Identifier_list;
-        struct Direct_declarator : tao::pegtl::sor<
-            tao::pegtl::seq<openparen, Declarator, closeparen>,
-            tao::pegtl::seq<Direct_declarator, openbrack, Type_qualifier_list, Assignment_expression, closebrack>,
-            tao::pegtl::seq<Direct_declarator, openbrack, Assignment_expression, closebrack>,
-            tao::pegtl::seq<Direct_declarator, openparen, Parameter_list, closeparen>,
-            tao::pegtl::seq<Direct_declarator, openparen, Identifier_list, closeparen>,
-            tao::pegtl::seq<Direct_declarator, openparen, closeparen>,
-            identifier
+        struct Direct_declarator_R;
+        struct Direct_declarator : tao::pegtl::seq<
+            tao::pegtl::sor<
+                tao::pegtl::seq<openparen, space_s, Declarator, space_s, closeparen>,
+                identifier
+            >,
+            tao::pegtl::opt<Direct_declarator_R>
         > {};
 
-        struct Pointer : tao::pegtl::sor<
-            tao::pegtl::seq<star, Type_qualifier_list, Pointer>,
-            tao::pegtl::seq<star, Type_qualifier_list>,
-            tao::pegtl::seq<star, Pointer>,
-            star
+        struct Direct_declarator_R : tao::pegtl::seq<
+            space_s,
+            tao::pegtl::sor<
+                tao::pegtl::seq<openbrack, space_s, Type_qualifier_list, space_s, Assignment_expression, space_s, closebrack>,
+                tao::pegtl::seq<openbrack, space_s, Assignment_expression, space_s, closebrack>,
+                tao::pegtl::seq<openparen, space_s, Parameter_list, space_s, closeparen>,
+                tao::pegtl::seq<openparen, space_s, Identifier_list, space_s, closeparen>,
+                tao::pegtl::seq<openparen, space_s, closeparen>
+            >,
+            tao::pegtl::opt<Direct_declarator_R>
+        > {};
+
+        struct Pointer_R;
+        struct Pointer : tao::pegtl::seq<
+            star,
+            tao::pegtl::opt<Pointer_R>
+        > {};
+
+        struct Pointer_R : tao::pegtl::seq<
+            tao::pegtl::opt<space_s, Type_qualifier_list>,
+            tao::pegtl::opt<space_s, Pointer>
         > {};
 
         struct Type_pointer;
-        struct Type_qualifier_list : tao::pegtl::sor<
-            tao::pegtl::seq<Type_qualifier_list, Type_pointer>,
+        struct Type_qualifier_list : tao::pegtl::seq<
+            tao::pegtl::opt<Type_qualifier_list>,
+            space_s,
             Type_pointer
         > {};
 
         struct Parameter_declaration;
-        struct Parameter_list : tao::pegtl::sor<
-            tao::pegtl::seq<Parameter_list, comma, Parameter_declaration>,
-            Parameter_declaration
+        struct Parameter_list : tao::pegtl::list<
+            Parameter_declaration,
+            tao::pegtl::pad<comma, space>
         > {};
 
         //struct Declaration_specifiers;
         struct Abstract_declarator;
-        struct Parameter_declaration : tao::pegtl::sor<
-            tao::pegtl::seq<Type_specifier, Declarator>,
-            tao::pegtl::seq<Type_specifier, Abstract_declarator>
+        struct Parameter_declaration : tao::pegtl::seq<
+            Type_specifier,
+            tao::pegtl::sor<Declarator, Abstract_declarator>
         > {};
 
-        struct Identifier_list : tao::pegtl::sor<
-            tao::pegtl::seq<Identifier_list, comma, identifier>,
-            identifier
+        struct Identifier_list : tao::pegtl::list<
+            identifier,
+            tao::pegtl::pad<comma, space>
         > {};
 
         struct Direct_abstract_declarator;
         struct Abstract_declarator : tao::pegtl::sor<
-            tao::pegtl::seq<Pointer, Direct_abstract_declarator>,
-            Direct_abstract_declarator,
+            tao::pegtl::seq<
+                tao::pegtl::opt<Pointer>,
+                Direct_abstract_declarator
+            >,
             Pointer
         > {};
 
@@ -293,185 +328,91 @@ namespace Parser {
         > {};
 
         struct Block_item_list;
-        struct Compound_statement : tao::pegtl::sor<
-            tao::pegtl::seq<opencurly, Block_item_list, closecurly>,
-            tao::pegtl::seq<opencurly, closecurly>
+        struct Compound_statement : tao::pegtl::seq<
+            opencurly,
+            tao::pegtl::pad_opt<Block_item_list, space>,
+            closecurly
         > {};
 
         struct Block_item;
-        struct Block_item_list : tao::pegtl::sor<
-            tao::pegtl::sor<Block_item_list, Block_item>,
-            Block_item
-        > {};
+        struct Block_item_list : tao::pegtl::list< Block_item, space_s> {};
 
         struct Block_item : tao::pegtl::sor<Declaration, Statement> {};
 
-        struct Expression_statement : tao::pegtl::sor<
-            tao::pegtl::seq<Expression, semicolon>,
+        struct Expression_statement : tao::pegtl::seq<
+            tao::pegtl::opt<Expression, space_s>,
             semicolon
         > {};
 
-        struct Selection_statement : tao::pegtl::sor<
-            tao::pegtl::seq<
-                if_keyword,
-                openparen,
-                Expression,
-                closeparen,
-                Statement
-            >,
-            tao::pegtl::seq<
-                if_keyword,
-                openparen,
-                Expression,
-                closeparen,
-                Statement,
-                else_keyword,
+        struct Selection_statement : tao::pegtl::seq<
+            if_keyword, space_s,
+            openparen, space_s,
+            Expression, space_s,
+            closeparen, space_s,
+            Statement,
+            tao::pegtl::opt<
+                space_s,
+                else_keyword, space_s,
                 Statement
             >
         > {};
 
         struct Iteration_statement : tao::pegtl::sor<
-            tao::pegtl::seq<while_keyword, openparen, Expression, closeparen, Statement>,
             tao::pegtl::seq<
-                for_keyword,
+                while_keyword, space_s,
+                openparen, space_s,
+                Expression, space_s,
+                closeparen, space_s,
+                Statement
+            >,
+            tao::pegtl::seq<
+                for_keyword, space_s,
                 openparen,
+                tao::pegtl::sor<
+                    tao::pegtl::seq<
+                        tao::pegtl::pad_opt<Expression, space>,
+                        semicolon
+                    >,
+                    Declaration
+                >,
+                tao::pegtl::pad_opt<Expression, space>,
                 semicolon,
-                semicolon,
-                closeparen,
-                Statement
-            >,
-            tao::pegtl::seq<
-                for_keyword,
-                Expression,
-                openparen,
-                semicolon,
-                semicolon,
-                closeparen,
-                Statement
-            >,
-            tao::pegtl::seq<
-                for_keyword,
-                openparen,
-                semicolon,
-                Expression,
-                semicolon,
-                closeparen,
-                Statement
-            >,
-            tao::pegtl::seq<
-                for_keyword,
-                openparen,
-                semicolon,
-                semicolon,
-                Expression,
-                closeparen,
-                Statement
-            >,
-            tao::pegtl::seq<
-                for_keyword,
-                openparen,
-                Expression,
-                semicolon,
-                Expression,
-                semicolon,
-                closeparen,
-                Statement
-            >,
-            tao::pegtl::seq<
-                for_keyword,
-                openparen,
-                Expression,
-                semicolon,
-                semicolon,
-                Expression,
-                closeparen,
-                Statement
-            >,
-            tao::pegtl::seq<
-                for_keyword,
-                openparen,
-                semicolon,
-                Expression,
-                semicolon,
-                Expression,
-                closeparen,
-                Statement
-            >,
-            tao::pegtl::seq<
-                for_keyword,
-                openparen,
-                Expression,
-                semicolon,
-                Expression,
-                semicolon,
-                Expression,
-                closeparen,
-                Statement
-            >,
-            tao::pegtl::seq<
-                for_keyword,
-                Declaration,
-                semicolon,
-                closeparen,
-                Statement
-            >,
-            tao::pegtl::seq<
-                for_keyword,
-                Declaration,
-                Expression,
-                semicolon,
-                closeparen,
-                Statement
-            >,
-            tao::pegtl::seq<
-                for_keyword,
-                Declaration,
-                semicolon,
-                Expression,
-                closeparen,
-                Statement
-            >,
-            tao::pegtl::seq<
-                for_keyword,
-                Declaration,
-                Expression,
-                semicolon,
-                Expression,
-                closeparen,
+                tao::pegtl::pad_opt<Expression, space>,
+                closeparen, space_s,
                 Statement
             >
         > {};
 
-        struct Jump_statement : tao::pegtl::sor<
-            tao::pegtl::seq<continue_keyword, semicolon>,
-            tao::pegtl::seq<break_keyword, semicolon>,
-            tao::pegtl::seq<return_keyword, Expression, semicolon>,
-            tao::pegtl::seq<return_keyword, semicolon>
+        struct Jump_statement : tao::pegtl::seq<
+            tao::pegtl::sor<
+                continue_keyword,
+                break_keyword,
+                tao::pegtl::seq<
+                    return_keyword,
+                    tao::pegtl::opt<Expression>
+                >
+            >,
+            semicolon
         > {};
 
         struct External_declaration;
-        struct External_declaration_list : tao::pegtl::sor<
-            tao::pegtl::seq<External_declaration_list, External_declaration>,
-            External_declaration
-        > {};
+        struct External_declaration_list : tao::pegtl::list<External_declaration, space_s> {};
 
         struct Declaration_list;
         struct External_declaration : tao::pegtl::seq<
             Type_specifier,
+            space_s,
             identifier,
+            space_s,
             tao::pegtl::sor<
-                tao::pegtl::seq<Declaration_list, Compound_statement>,
+                tao::pegtl::seq<Declaration_list, space_s, Compound_statement>,
                 Compound_statement
             >
         > {};
 
-        struct Declaration_list : tao::pegtl::sor<
-            tao::pegtl::sor<Declaration_list, Declaration>,
-            Declaration
-        > {};
-
-        struct S_aug : External_declaration_list {};
+        struct Declaration_list : tao::pegtl::list<Declaration, space_s> {};
     }
+    struct grammar : External_declaration_list {};
 }
 
 #endif

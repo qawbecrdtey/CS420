@@ -6,8 +6,12 @@
 #include <utility>
 #include <vector>
 
+#include <tao/pegtl.hpp>
+
 //#include "ASCII.hpp"
 //#include "syntax_tree_node.hpp"
+#include "Parser/Grammar.hpp"
+#include "Parser/Action.hpp"
 
 inline std::string_view substr(std::string_view base, std::uint64_t pos = 0, std::uint64_t len = std::string_view::npos) { return base.substr(pos, len); }
 
@@ -26,22 +30,25 @@ int main(int argc, char* argv[]) {
 		std::cout << "Using input file " << (input_file_name = argv[1]) << '.' << std::endl;
 	}
 
-	std::ifstream in(input_file_name);
+	std::ifstream in_f(input_file_name);
 	// If there is no input file with such name, exit the program.
-	if (!in) {
+	if (!in_f) {
 		std::cerr << "Couldn't find file " << input_file_name << "!" << std::endl;
 		return 1;
 	}
 	// Saves the input into source.
-	in.seekg(0, std::ios::end);
-	source.resize(in.tellg());
-	in.seekg(0, std::ios::beg);
-	in.read(&source[0], source.size());
-	in.close();
+	in_f.seekg(0, std::ios::end);
+	source.resize(in_f.tellg());
+	in_f.seekg(0, std::ios::beg);
+	in_f.read(&source[0], source.size());
+	in_f.close();
 
 	/* FILE INPUT END */
 
     std::cout << source<< std::endl;
+
+	tao::pegtl::memory_input in(source, "");
+	tao::pegtl::parse<Parser::grammar, Parser::action>(in);
 /*
 	std::cout << source << std::endl;
 	std::cout << "Length: " << source.length() << std::endl;
