@@ -389,7 +389,7 @@ namespace Parser {
                 break_keyword,
                 tao::pegtl::seq<
                     return_keyword,
-                    space_s
+                    space_s,
                     tao::pegtl::opt<Expression>
                 >
             >,
