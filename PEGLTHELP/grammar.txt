@@ -1,0 +1,128 @@
+S' -> S
+S -> External_declaration_list
+Type_specifier -> float_keyword
+Type_specifier -> int_keyword
+Type_specifier -> void_keyword
+Int_number -> number
+Float_number -> number dot number
+Float_number -> number dot
+Float_number ->	dot number
+Constant -> Int_number
+Constant -> Float_number
+Primary_expression -> identifier
+Primary_expression -> Constant
+Primary_expression -> openparen Expression closeparen
+Postfix_expression -> Primary_expression
+Postfix_expression -> Postfix_expression openbrack Expression closebrack
+Postfix_expression -> Postfix_expression openparen Argument_expression_list closeparen
+Postfix_expression -> Postfix_expression openparen closeparen
+Postfix_expression -> Postfix_expression plusplus
+Postfix_expression -> Postfix_expression minusminus
+Argument_expression_list -> Assignment_expression
+Argument_expression_list -> Argument_expression_list comma Assignment_expression
+Unary_expression -> Postfix_expression
+Unary_expression -> plusplus Unary_expression
+Unary_expression -> minusminus Unary_expression
+Unary_expression -> Unary_operator Unary_expression
+Unary_operator -> star
+Unary_operator -> plus
+Unary_operator -> minus
+Unary_operator -> exclamation
+Multiplicative_expression -> Unary_expression
+Multiplicative_expression -> Multiplicative_expression star Unary_expression
+Multiplicative_expression -> Multiplicative_expression slash Unary_expression
+Multiplicative_expression -> Multiplicative_expression percent Unary_expression
+Additive_expression -> Multiplicative_expression
+Additive_expression -> Additive_expression plus Multiplicative_expression
+Additive_expression -> Additive_expression minus Multiplicative_expression
+Relational_expression -> Additive_expression
+Relational_expression -> Relational_expression less Additive_expression
+Relational_expression -> Relational_expression greater Additive_expression
+Relational_expression -> Relational_expression lessequal Additive_expression
+Relational_expression -> Relational_expression greaterequal Additive_expression
+Equality_expression -> Relational_expression
+Equality_expression -> Equality_expression equalequal Relational_expression
+Equality_expression -> Equality_expression notequal Relational_expression
+Logical_AND_expression -> Equality_expression
+Logical_AND_expression -> Logical_AND_expression andand Equality_expression
+Logical_OR_expression -> Logical_AND_expression
+Logical_OR_expression -> Logical_OR_expression oror Logical_AND_expression
+Conditional_expression -> Logical_OR_expression
+Conditional_expression -> Logical_OR_expression question Expression colon Conditional_expression
+Assignment_expression -> Conditional_expression
+Assignment_expression -> Unary_expression Assignment_operator Assignment_expression
+Assignment_operator -> equal
+Assignment_operator -> starequal
+Assignment_operator -> slashequal
+Assignment_operator -> percentequal
+Assignment_operator -> plusequal
+Assignment_operator -> minusequal
+Expression -> Assignment_expression
+Expression -> Expression comma Assignment_expression
+Constant_expression -> Conditional_expression
+Declaration -> Type_specifier Init_declarator_list semicolon
+Declaration -> Type_specifier semicolon
+Init_declarator_list -> Init_declarator
+Init_declarator_list -> Init_declarator_list comma Init_declarator
+Init_declarator -> Declarator
+Init_declarator -> Declarator equal Assignment_expression
+Declarator -> Pointer Direct_declarator
+Declarator -> Direct_declarator
+Direct_declarator -> identifier
+Direct_declarator -> openparen Declarator closeparen
+Direct_declarator -> Direct_declarator openbrack Assignment_expression closebrack
+Direct_declarator -> Direct_declarator openparen Parameter_list closeparen
+Direct_declarator -> Direct_declarator openparen Identifier_list closeparen
+Direct_declarator -> Direct_declarator openparen closeparen
+Pointer -> star
+Pointer -> star pointer
+Parameter_list -> Parameter_declaration
+Parameter_list -> Parameter_list comma Parameter_declaration
+Parameter_declaration -> Type_specifier Declarator
+Parameter_declaration -> Type_specifier Abstract_declarator
+Identifier_list -> identifier
+Identifier_list -> Identifier_list comma identifier
+Abstract_declarator -> Pointer
+Abstract_declarator -> Pointer Direct_abstract_declarator
+Abstract_declarator -> Direct_abstract_declarator
+Direct_abstract_declarator -> openparen Abstract_declarator closeparen
+Direct_abstract_declarator -> openbrack Assignment_expression closebrack
+Direct_abstract_declarator -> openbrack closebrack
+Direct_abstract_declarator -> openbrack closebrack
+Statement -> Compound_statement
+Statement -> Expression_statement
+Statement -> Selection_statement
+Statement -> Iteration_statement
+Statement -> Jump_statement
+Compound_statement -> opencurly Block_item_list closecurly
+Compound_statement -> opencurly closecurly
+Block_item_list -> Block_item
+Block_item_list -> Block_item_list Block_item
+Block_item -> Declaration
+Block_item -> Statement
+Expression_statement -> Expression semicolon
+Expression_statement -> semicolon
+Selection_statement -> if_keyword openparen Expression closeparen Statement
+Selection_statement -> if_keyword openparen Expression closeparen Statement else_keyword Statement
+Iteration_statement -> while_keyword openparen Expression closeparen Statement
+Iteration_statement -> for_keyword openparen semicolon Expression semicolon Expression closeparen Statement
+Iteration_statement -> for_keyword openparen semicolon Expression semicolon closeparen Statement
+Iteration_statement -> for_keyword openparen semicolon semicolon Expression closeparen Statement
+Iteration_statement -> for_keyword openparen semicolon semicolon closeparen Statement
+Iteration_statement -> for_keyword openparen Expression semicolon Expression semicolon Expression closeparen Statement
+Iteration_statement -> for_keyword openparen Expression semicolon Expression semicolon closeparen Statement
+Iteration_statement -> for_keyword openparen Expression semicolon semicolon Expression closeparen Statement
+Iteration_statement -> for_keyword openparen Expression semicolon semicolon closeparen Statement
+Iteration_statement -> for_keyword openparen declaration Expression semicolon Expression closeparen Statement
+Iteration_statement -> for_keyword openparen declaration Expression semicolon closeparen Statement
+Iteration_statement -> for_keyword openparen declaration semicolon Expression closeparen Statement
+Iteration_statement -> for_keyword openparen declaration semicolon closeparen Statement
+Jump_statement -> continue_keyword semicolon
+Jump_statement -> break_keyword semicolon
+Jump_statement -> return_keyword Expression semicolon
+Jump_statement -> return_keyword semicolon
+External_declaration_list -> External_declaration_list External_declaration
+External_declaration -> Type_specifier Declarator Declaration_list Compound_statement
+External_declaration -> Type_specifier Declarator Compound_statement
+Declaration_list -> Declaration
+Declaration_list -> Declaration_list Declaration
