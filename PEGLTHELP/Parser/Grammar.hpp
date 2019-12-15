@@ -11,7 +11,7 @@ namespace Parser {
         struct digits : tao::pegtl::plus<digit> {};
         struct number : digits {};
         struct space : tao::pegtl::space {};
-        struct spaces : tao::pegtl::plus<space> {};
+        struct spaces;
         struct space_s;
         struct newline : tao::pegtl::one<'\n'> {};
 
@@ -64,6 +64,13 @@ namespace Parser {
                     tao::pegtl::one<34>,
                     tao::pegtl::string<92, 34>
                 >
+            >
+        > {};
+        struct spaces : tao::pegtl::plus<
+            tao::pegtl::sor<
+                tao::pegtl::space,
+                linecomment,
+                blockcomment
             >
         > {};
 
@@ -125,14 +132,15 @@ namespace Parser {
         struct Primary_expression : tao::pegtl::sor<
             identifier,
             Constant,
+            string_literal,
             tao::pegtl::seq<openparen, space_s, Expression, space_s, closeparen>
         > {};
 
         struct Argument_expression_list;
         struct Postfix_expression_R;
-        struct Postfix_expression : tao::pegtl::sor<
-            tao::pegtl::seq<Primary_expression, space_s, Postfix_expression_R>,
-            Primary_expression
+        struct Postfix_expression : tao::pegtl::seq<
+            Primary_expression,
+            tao::pegtl::opt<space_s, Postfix_expression_R>
         > {};
         
         struct Postfix_expression_R : tao::pegtl::sor<
@@ -230,7 +238,8 @@ namespace Parser {
         struct Init_declarator_list;
         struct Declaration : tao::pegtl::seq<
             Type_specifier,
-            tao::pegtl::opt<Init_declarator_list>,
+            spaces,
+            tao::pegtl::opt<Init_declarator_list, space_s>,
             semicolon
         > {};
 
@@ -291,7 +300,7 @@ namespace Parser {
         struct Abstract_declarator;
         struct Parameter_declaration : tao::pegtl::seq<
             Type_specifier,
-            space_s,
+            spaces,
             tao::pegtl::sor<Declarator, Abstract_declarator>
         > {};
 
@@ -389,7 +398,7 @@ namespace Parser {
                 break_keyword,
                 tao::pegtl::seq<
                     return_keyword,
-                    space_s
+                    space_s,
                     tao::pegtl::opt<Expression>
                 >
             >,
@@ -403,7 +412,7 @@ namespace Parser {
         struct Declaration_list;
         struct External_declaration : tao::pegtl::seq<
             Type_specifier,
-            space_s,
+            spaces,
             Declarator,
             space_s,
             tao::pegtl::sor<
@@ -414,7 +423,7 @@ namespace Parser {
 
         struct Declaration_list : tao::pegtl::list<Declaration, space_s> {};
     }
-    struct grammar : External_declaration_list {};
+    struct grammar : tao::pegtl::seq<space_s, External_declaration_list, space_s> {};
 }
 
 #endif

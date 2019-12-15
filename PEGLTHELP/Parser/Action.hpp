@@ -45,7 +45,7 @@ namespace Parser {
 	struct action<Type_specifier> {
 	    template<typename Input>
 	    static void apply(Input const &in) {
-	        std::cout << "keyword : " << in.string() << std::endl;
+	        std::cout << "Type_specifier : " << in.string() << std::endl;
 	    }
 	};
 	template<>
@@ -58,6 +58,28 @@ namespace Parser {
 	struct action<Direct_declarator>{
 	    static void apply0(){
 	        std::cout << "Direct_declarator" << std::endl;
+	    }
+	};
+
+	template<>
+	struct action<Primary_expression> {
+	    template<typename Input>
+	    static void apply(Input const &in) {
+	        std::cout << "Primary_expression : " << in.string() << std::endl;
+	    }
+	};
+	template<>
+	struct action<Expression> {
+	    template<typename Input>
+	    static void apply(Input const &in) {
+	        std::cout << "Expression : " << in.string() << std::endl;
+	    }
+	};
+
+	template<>
+	struct action<spaces> {
+	    static void apply0() {
+	        std::cout << "spaces" << std::endl;
 	    }
 	};
 }
