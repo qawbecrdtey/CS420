@@ -46,10 +46,13 @@ int main(int argc, char* argv[]) {
 	/* FILE INPUT END */
 
     std::cout << source << std::endl;
-
+try{
 	tao::pegtl::memory_input in(source, "");
 	auto b = tao::pegtl::parse<Parser::grammar, Parser::action>(in);
-	std::cout << (b ? "true" : "false") << std::endl;
+	std::cout << (b ? "true" : "false") << std::endl;}
+catch (std::exception &e) {
+    std::cout << e.what() << std::endl;
+}
 /*
 	std::cout << source << std::endl;
 	std::cout << "Length: " << source.length() << std::endl;
