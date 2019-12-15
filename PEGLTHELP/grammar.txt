@@ -75,7 +75,7 @@ Direct_declarator -> Direct_declarator openparen Parameter_list closeparen
 Direct_declarator -> Direct_declarator openparen Identifier_list closeparen
 Direct_declarator -> Direct_declarator openparen closeparen
 Pointer -> star
-Pointer -> star pointer
+Pointer -> star Pointer
 Parameter_list -> Parameter_declaration
 Parameter_list -> Parameter_list comma Parameter_declaration
 Parameter_declaration -> Type_specifier Declarator
@@ -87,7 +87,6 @@ Abstract_declarator -> Pointer Direct_abstract_declarator
 Abstract_declarator -> Direct_abstract_declarator
 Direct_abstract_declarator -> openparen Abstract_declarator closeparen
 Direct_abstract_declarator -> openbrack Assignment_expression closebrack
-Direct_abstract_declarator -> openbrack closebrack
 Direct_abstract_declarator -> openbrack closebrack
 Statement -> Compound_statement
 Statement -> Expression_statement

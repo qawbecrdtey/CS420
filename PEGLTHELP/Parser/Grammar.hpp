@@ -214,7 +214,7 @@ namespace Parser {
 
         struct Assignment_operator;
         struct Assignment_expression : tao::pegtl::sor<
-            tao::pegtl::seq<Unary_expression, Assignment_operator, Assignment_expression>,
+            tao::pegtl::seq<Unary_expression, space_s, Assignment_operator, space_s, Assignment_expression>,
             Conditional_expression
         > {};
 
@@ -291,6 +291,7 @@ namespace Parser {
         struct Abstract_declarator;
         struct Parameter_declaration : tao::pegtl::seq<
             Type_specifier,
+            space_s,
             tao::pegtl::sor<Declarator, Abstract_declarator>
         > {};
 
@@ -309,8 +310,8 @@ namespace Parser {
         > {};
 
         struct Direct_abstract_declarator : tao::pegtl::sor<
-            tao::pegtl::seq<openparen, Abstract_declarator, closeparen>,
-            tao::pegtl::seq<openbrack, tao::pegtl::opt<Assignment_expression>, closebrack>
+            tao::pegtl::seq<openparen, space_s, Abstract_declarator, space_s, closeparen>,
+            tao::pegtl::seq<openbrack, space_s, tao::pegtl::opt<Assignment_expression>, space_s, closebrack>
         > {};
 
         struct Compound_statement;
