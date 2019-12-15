@@ -258,8 +258,7 @@ namespace Parser {
         struct Pointer;
         struct Direct_declarator;
         struct Declarator : tao::pegtl::seq<
-            tao::pegtl::opt<Pointer>,
-            space_s,
+            tao::pegtl::opt<Pointer, space_s>,
             Direct_declarator
         > {};
 
@@ -285,7 +284,7 @@ namespace Parser {
             tao::pegtl::opt<Direct_declarator_R>
         > {};
 
-        struct Pointer : tao::pegtl::sor<
+        struct Pointer : tao::pegtl::seq<
             star,
             tao::pegtl::opt<Pointer>
         > {};

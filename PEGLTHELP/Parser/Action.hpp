@@ -82,6 +82,20 @@ namespace Parser {
 	        std::cout << "spaces" << std::endl;
 	    }
 	};
+	template<>
+	struct action<Declarator> {
+	    template<typename Input>
+	    static void apply(Input const &in) {
+	        std::cout << "Declarator : " << in.string() << std::endl;
+	    }
+	};
+	template<>
+	struct action<Pointer> {
+	    template<typename Input>
+	    static void apply(Input const &in) {
+	        std::cout << "Pointer : " << in.string() << std::endl;
+	    }
+	};
 }
 
 #endif
