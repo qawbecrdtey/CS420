@@ -126,6 +126,14 @@ namespace Parser {
             std::cout << in.position() << std::endl;
         }
     };
+    template<>
+    struct action<Pointer> {
+        template<typename Input>
+        static void apply(Input const &in) {
+            std::cout << "Pointer" << std::endl;
+            std::cout << in.position() << std::endl;
+        }
+    };
 }
 
 #endif
