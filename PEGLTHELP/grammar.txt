@@ -66,7 +66,7 @@ Init_declarator_list -> Init_declarator
 Init_declarator_list -> Init_declarator_list comma Init_declarator
 Init_declarator -> Declarator
 Init_declarator -> Declarator equal Assignment_expression
-Declarator -> Pointer Direct_declarator
+Declarator -> Pointer Declarator
 Declarator -> Direct_declarator
 Direct_declarator -> identifier
 Direct_declarator -> openparen Declarator closeparen
@@ -79,14 +79,8 @@ Pointer -> star Pointer
 Parameter_list -> Parameter_declaration
 Parameter_list -> Parameter_list comma Parameter_declaration
 Parameter_declaration -> Type_specifier Declarator
-Parameter_declaration -> Type_specifier Abstract_declarator
 Identifier_list -> identifier
-Identifier_list -> Identifier_list comma identifier
-Abstract_declarator -> Pointer
-Abstract_declarator -> Pointer Direct_abstract_declarator
-Abstract_declarator -> Direct_abstract_declarator
-Direct_abstract_declarator -> openparen Abstract_declarator closeparen
-Direct_abstract_declarator -> openbrack Assignment_expression closebrack
+Identifier_list -> Identifier_list comma identifiersion closebrack
 Direct_abstract_declarator -> openbrack closebrack
 Statement -> Compound_statement
 Statement -> Expression_statement
@@ -121,7 +115,6 @@ Jump_statement -> break_keyword semicolon
 Jump_statement -> return_keyword Expression semicolon
 Jump_statement -> return_keyword semicolon
 External_declaration_list -> External_declaration_list External_declaration
-External_declaration -> Type_specifier Declarator Declaration_list Compound_statement
 External_declaration -> Type_specifier Declarator Compound_statement
 Declaration_list -> Declaration
 Declaration_list -> Declaration_list Declaration
