@@ -259,7 +259,7 @@ namespace Parser {
         struct Direct_declarator;
         struct Declarator : tao::pegtl::seq<
             tao::pegtl::opt<Pointer, space_s>,
-            Declarator
+			Direct_declarator
         > {};
 
         struct Parameter_list;
@@ -401,7 +401,6 @@ namespace Parser {
             Declarator,
             space_s,
             Compound_statement
-            >
         > {};
 
         struct Declaration_list : tao::pegtl::list<Declaration, space_s> {};
