@@ -55,7 +55,7 @@ namespace Parser {
         struct openbrack : tao::pegtl::one<'['> {};
         struct closebrack : tao::pegtl::one<']'> {};
         struct dot : tao::pegtl::one<'.'> {};
-        struct comma : tao::pegtl::one<'.'> {};
+        struct comma : tao::pegtl::one<','> {};
         struct semicolon : tao::pegtl::one<';'> {};
         struct string_literal : tao::pegtl::seq<
             tao::pegtl::one<34>,
