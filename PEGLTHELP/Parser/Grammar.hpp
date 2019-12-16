@@ -73,7 +73,6 @@ namespace Parser {
                 blockcomment
             >
         > {};
-
         struct space_s : tao::pegtl::star<
             tao::pegtl::sor<
                 tao::pegtl::space,
@@ -405,7 +404,7 @@ namespace Parser {
 
         struct Declaration_list : tao::pegtl::list<Declaration, space_s> {};
     }
-    struct grammar : tao::pegtl::seq<space_s, External_declaration_list, space_s> {};
+    struct grammar : tao::pegtl::until<tao::pegtl::seq<space_s, tao::pegtl::eof>, tao::pegtl::seq<space_s, External_declaration_list>> {};
 }
 
 #endif

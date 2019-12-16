@@ -69,6 +69,7 @@ Init_declarator -> Declarator equal Assignment_expression
 Declarator -> Pointer Declarator
 Declarator -> Direct_declarator
 Direct_declarator -> identifier
+Direct_declarator -> identifier
 Direct_declarator -> openparen Declarator closeparen
 Direct_declarator -> Direct_declarator openbrack Assignment_expression closebrack
 Direct_declarator -> Direct_declarator openparen Parameter_list closeparen
