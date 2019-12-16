@@ -87,6 +87,14 @@ namespace Parser {
 	    }
 	};
 	template<>
+	struct action<closeparen> {
+	    template<typename Input>
+	    static void apply(Input const &in) {
+	        std::cout << "closeparen" << std::endl;
+	        std::cout << in.position() << std::endl;
+	    }
+	};
+	template<>
 	struct action<for_keyword> {
 	    template<typename Input>
 	    static void apply(Input const &in) {
@@ -102,6 +110,22 @@ namespace Parser {
 	        std::cout << in.position() << std::endl;
 	    }
 	};
+	template<>
+	struct action<int_keyword> {
+	    template<typename Input>
+	    static void apply(Input const &in) {
+	        std::cout << "int_keyword" << std::endl;
+	        std::cout << in.position() << std::endl;
+	    }
+	};
+    template<>
+    struct action<float_keyword> {
+        template<typename Input>
+        static void apply(Input const &in) {
+            std::cout << "int_keyword" << std::endl;
+            std::cout << in.position() << std::endl;
+        }
+    };
 }
 
 #endif
