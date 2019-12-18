@@ -47,8 +47,10 @@ int main(int argc, char* argv[]) {
 
 	std::cout << source << std::endl;
 	try {
+		Parser::Identifier_map_stack ims;
+		Parser::Identifier_storage_vector isv;
 		tao::pegtl::memory_input in(source, "");
-		auto b = tao::pegtl::parse<Parser::grammar, Parser::action>(in);
+		auto b = tao::pegtl::parse<Parser::grammar, Parser::action>(in, ims, isv);
 		std::cout << (b ? "true" : "false") << std::endl;
 	}
 	catch (std::exception & e) {

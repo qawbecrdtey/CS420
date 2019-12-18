@@ -153,7 +153,7 @@ namespace Parser {
         struct Assignment_expression;
         struct Argument_expression_list : tao::pegtl::list<
             Assignment_expression,
-            tao::pegtl::seq<tao::pegtl::pad<comma, space>>
+            tao::pegtl::pad<comma, space>
         > {};
 
         struct Unary_operator;
@@ -166,46 +166,54 @@ namespace Parser {
 
         struct Unary_operator : tao::pegtl::sor<star, plus, minus, exclamation> {};
 
-        struct Multiplicative_expression : tao::pegtl::list<
+        struct Multiplicative_expression : tao::pegtl::seq<
             Unary_expression,
-            tao::pegtl::pad<
-                tao::pegtl::sor<star, slash, percent>,
-                space
-            >
+			tao::pegtl::opt<
+				space_s,
+				tao::pegtl::sor<star, slash, percent>,
+				space_s,
+				Multiplicative_expression
+			>
         > {};
 
-        struct Additive_expression : tao::pegtl::list<
+        struct Additive_expression : tao::pegtl::seq<
             Multiplicative_expression,
-            tao::pegtl::pad<
-                tao::pegtl::sor<plus, minus>,
-                space
-            >
+			tao::pegtl::opt<
+				space_s,
+				tao::pegtl::sor<plus, minus>,
+				space_s,
+				Additive_expression
+			>
         > {};
 
-        struct Relational_expression : tao::pegtl::list<
+        struct Relational_expression : tao::pegtl::seq<
             Additive_expression,
-            tao::pegtl::pad<
-                tao::pegtl::sor<lessequal, greaterequal, less, greater>,
-                space
-            >
+			tao::pegtl::opt<
+				space_s,
+				tao::pegtl::sor<lessequal, greaterequal, less, greater>,
+				space_s,
+				Relational_expression
+			>
         > {};
 
-        struct Equality_expression : tao::pegtl::list<
+        struct Equality_expression : tao::pegtl::seq<
             Relational_expression,
-            tao::pegtl::pad<
-                tao::pegtl::sor<equalequal, notequal>,
-                space
-            >
+			tao::pegtl::opt<
+				space_s,
+				tao::pegtl::sor<equalequal, notequal>,
+				space_s,
+				Equality_expression
+			>
         > {};
 
-        struct Logical_AND_expression : tao::pegtl::list<
+        struct Logical_AND_expression : tao::pegtl::seq<
             Equality_expression,
-            tao::pegtl::pad<andand, space>
+            tao::pegtl::opt<space_s, andand, space_s, Logical_AND_expression>
         > {};
 
-        struct Logical_OR_expression : tao::pegtl::list<
+        struct Logical_OR_expression : tao::pegtl::seq<
             Logical_AND_expression,
-            tao::pegtl::pad<oror, space>
+            tao::pegtl::opt<space_s, oror, space_s, Logical_OR_expression>
         > {};
 
         struct Conditional_expression : tao::pegtl::sor<
@@ -243,15 +251,15 @@ namespace Parser {
         > {};
 
         struct Init_declarator;
-        struct Init_declarator_list : tao::pegtl::list<
+        struct Init_declarator_list : tao::pegtl::seq<
             Init_declarator,
-            tao::pegtl::pad<comma, space>
+			tao::pegtl::opt<space_s, comma, space_s, Init_declarator_list>
         > {};
 
         struct Declarator;
         struct Init_declarator : tao::pegtl::seq<
             Declarator,
-            tao::pegtl::opt<equal, Assignment_expression>
+            tao::pegtl::opt<space_s, equal, space_s, Assignment_expression>
         > {};
 
         struct Pointer;
@@ -265,18 +273,21 @@ namespace Parser {
         struct Identifier_list;
         struct Direct_declarator_R;
         struct Direct_declarator : tao::pegtl::seq<
-            tao::pegtl::sor<
-                tao::pegtl::seq<openparen, space_s, Declarator, space_s, closeparen>,
-                identifier
-            >,
+            identifier,
             tao::pegtl::opt<Direct_declarator_R>
         > {};
+
+		struct Parameter_type_list : tao::pegtl::list<
+			Type_specifier,
+			tao::pegtl::pad<comma, space>
+		> {};
 
         struct Direct_declarator_R : tao::pegtl::seq<
             space_s,
             tao::pegtl::sor<
                 tao::pegtl::seq<openbrack, space_s, Assignment_expression, space_s, closebrack>,
                 tao::pegtl::seq<openparen, space_s, Parameter_list, space_s, closeparen>,
+				tao::pegtl::seq<openparen, space_s, Parameter_type_list, space_s, closeparen>,
                 tao::pegtl::seq<openparen, space_s, Identifier_list, space_s, closeparen>,
                 tao::pegtl::seq<openparen, space_s, closeparen>
             >,
@@ -285,7 +296,7 @@ namespace Parser {
 
         struct Pointer : tao::pegtl::seq<
             star,
-            spaces,
+            space_s,
             tao::pegtl::opt<Pointer>
         > {};
 
@@ -299,7 +310,7 @@ namespace Parser {
         struct Parameter_declaration : tao::pegtl::seq<
             Type_specifier,
             spaces,
-            Declarator
+			Declarator
         > {};
 
         struct Identifier_list : tao::pegtl::list<
@@ -391,7 +402,14 @@ namespace Parser {
         > {};
 
         struct External_declaration;
-        struct External_declaration_list : tao::pegtl::list<External_declaration, space_s> {};
+		struct External_declaration_list_R;
+        struct External_declaration_list : tao::pegtl::seq<External_declaration, tao::pegtl::opt<External_declaration_list_R>> {};
+
+		struct External_declaration_list_R : tao::pegtl::seq<
+			space_s,
+			External_declaration,
+			tao::pegtl::opt<External_declaration_list_R>
+		> {};
 
         struct Declaration_list;
         struct External_declaration : tao::pegtl::seq<
@@ -402,9 +420,12 @@ namespace Parser {
             Compound_statement
         > {};
 
-        struct Declaration_list : tao::pegtl::list<Declaration, space_s> {};
+        struct Declaration_list : tao::pegtl::list<
+			Declaration,
+			space_s
+		> {};
     }
-    struct grammar : tao::pegtl::until<tao::pegtl::seq<space_s, tao::pegtl::eof>, tao::pegtl::seq<space_s, External_declaration_list>> {};
+    struct grammar : tao::pegtl::seq<space_s, External_declaration_list, space_s, tao::pegtl::eof> {};
 }
 
 #endif
