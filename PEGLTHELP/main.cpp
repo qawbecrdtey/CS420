@@ -7,6 +7,7 @@
 #include <vector>
 
 #include <tao/pegtl.hpp>
+#include <tao/pegtl/contrib/parse_tree.hpp>
 
 //#include "ASCII.hpp"
 //#include "syntax_tree_node.hpp"
@@ -50,8 +51,9 @@ int main(int argc, char* argv[]) {
 		Parser::Identifier_map_stack ims;
 		Parser::Identifier_storage_vector isv;
 		tao::pegtl::memory_input in(source, "");
-		auto b = tao::pegtl::parse<Parser::grammar, Parser::action>(in, ims, isv);
-		std::cout << (b ? "true" : "false") << std::endl;
+		auto root = tao::pegtl::parse_tree::parse<Parser::grammar>(in);
+		//auto b = tao::pegtl::parse<Parser::grammar, Parser::action>(in, ims, isv);
+		//std::cout << (b ? "true" : "false") << std::endl;
 	}
 	catch (std::exception & e) {
 		std::cout << e.what() << std::endl;
