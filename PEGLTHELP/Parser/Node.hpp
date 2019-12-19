@@ -154,27 +154,158 @@ namespace Parser {
 		static void transform(std::unique_ptr<node>& n) {
 			if (n->children.size() == 1) {
 				n = std::move(n->children[0]);
+                return;
 			}
+            n->remove_content();
+            auto r = std::move(n->children[1]);
+            auto u = std::move(n->children[0]);
+            n->children.clear();
+            u->children.emplace_back(std::move(r));
+            n = std::move(u);
 		}
 	};
 	template<>
 	struct selector<Multiplicative_expression> : std::true_type {
 		static void transform(std::unique_ptr<node>& n) {
-			if (n->children.size() == 1) {
-				n = std::move(n->children[0]);
-				return;
-			}
-			auto&& r = std::move(n->children.back());
+            if (n->children.size() == 1) {
+                n = std::move(n->children[0]);
+                return;
+            }
+            n->remove_content();
+			auto r = std::move(n->children.back());
 			n->children.pop_back();
-			auto&& o = std::move(n->children.back());
+			auto o = std::move(n->children.back());
 			n->children.pop_back();
 			o->children.emplace_back(std::move(n));
 			o->children.emplace_back(std::move(r));
 			n = std::move(o);
-			transform(n->children[0]);
+            transform(n->children[0]);
 		}
 	};
+    template<>
+    struct selector<Additive_expression> : std::true_type {
+        static void transform(std::unique_ptr<node>& n) {
+            if (n->children.size() == 1) {
+                n = std::move(n->children[0]);
+                return;
+            }
+            n->remove_content();
+            auto r = std::move(n->children.back());
+            n->children.pop_back();
+            auto o = std::move(n->children.back());
+            n->children.pop_back();
+            o->children.emplace_back(std::move(n));
+            o->children.emplace_back(std::move(r));
+            n = std::move(o);
+            transform(n->children[0]);
+        }
+    };
+    template<>
+    struct selector<Relational_expression> : std::true_type {
+        static void transform(std::unique_ptr<node>& n) {
+            if (n->children.size() == 1) {
+                n = std::move(n->children[0]);
+                return;
+            }
+            n->remove_content();
+            auto r = std::move(n->children.back());
+            n->children.pop_back();
+            auto o = std::move(n->children.back());
+            n->children.pop_back();
+            o->children.emplace_back(std::move(n));
+            o->children.emplace_back(std::move(r));
+            n = std::move(o);
+            transform(n->children[0]);
+        }
+    };
+    template<>
+    struct selector<Equality_expression> : std::true_type {
+        static void transform(std::unique_ptr<node>& n) {
+            if (n->children.size() == 1) {
+                n = std::move(n->children[0]);
+                return;
+            }
+            n->remove_content();
+            auto r = std::move(n->children.back());
+            n->children.pop_back();
+            auto o = std::move(n->children.back());
+            n->children.pop_back();
+            o->children.emplace_back(std::move(n));
+            o->children.emplace_back(std::move(r));
+            n = std::move(o);
+            transform(n->children[0]);
+        }
+    };
+    template<>
+    struct selector<Logical_AND_expression> : std::true_type {
+        static void transform(std::unique_ptr<node>& n) {
+            if (n->children.size() == 1) {
+                n = std::move(n->children[0]);
+                return;
+            }
+            n->remove_content();
+            auto r = std::move(n->children.back());
+            n->children.pop_back();
+            auto o = std::move(n->children.back());
+            n->children.pop_back();
+            o->children.emplace_back(std::move(n));
+            o->children.emplace_back(std::move(r));
+            n = std::move(o);
+            transform(n->children[0]);
+        }
+    };
+    template<>
+    struct selector<Logical_OR_expression> : std::true_type {
+        static void transform(std::unique_ptr<node>& n) {
+            if (n->children.size() == 1) {
+                n = std::move(n->children[0]);
+                return;
+            }
+            n->remove_content();
+            auto r = std::move(n->children.back());
+            n->children.pop_back();
+            auto o = std::move(n->children.back());
+            n->children.pop_back();
+            o->children.emplace_back(std::move(n));
+            o->children.emplace_back(std::move(r));
+            n = std::move(o);
+            transform(n->children[0]);
+        }
+    };
+    template<>
+    struct selector<Conditional_expression> : std::true_type {
+        static void transform(std::unique_ptr<node>& n) {
+            if (n->children.size() == 1) {
+                n = std::move(n->children[0]);
+            }
+        }
+    };
+    template<>
+    struct selector<Assignment_expression> : std::true_type {
+        static void transform(std::unique_ptr<node>& n) {
+            if (n->children.size() == 1) {
+                n = std::move(n->children[0]);
+            }
+        }
+    };
+    template<>
+    struct selector<Expression> : std::true_type {
+        static void transform(std::unique_ptr<node>& n) {
+            if (n->children.size() == 1) {
+                n = std::move(n->children[0]);
+            }
+        }
+    };
 
+    template<>
+    struct selector<Declaration> : std::true_type {
+        static void transform(std::unique_ptr<node>& n) {
+            n->remove_content();
+            auto t = std::move(n->children[0]);
+            auto l = std::move(n->children[1]);
+            
+        }
+    };
 }
 
 #endif

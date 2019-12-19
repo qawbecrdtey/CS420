@@ -1,6 +1,6 @@
 int main() {
 	int t = 2000;
-	int x = -t * t;
-	printf("Hello world! %d", t);
+	int x = -t + t * 2000 < 0 ? 1 : -1;
+	printf("Hello world! %d", x);
 	return 110;
 }

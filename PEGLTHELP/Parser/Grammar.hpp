@@ -171,55 +171,40 @@ namespace Parser {
 			tao::pegtl::pad<tao::pegtl::sor<star, slash, percent>, space>
         > {};
 
-        struct Additive_expression : tao::pegtl::seq<
+        struct Additive_expression : tao::pegtl::list<
             Multiplicative_expression,
-			tao::pegtl::opt<
-				space_s,
-				tao::pegtl::sor<plus, minus>,
-				space_s,
-				Additive_expression
-			>
+            tao::pegtl::pad<tao::pegtl::sor<plus, minus>, space>
         > {};
 
-        struct Relational_expression : tao::pegtl::seq<
+        struct Relational_expression : tao::pegtl::list<
             Additive_expression,
-			tao::pegtl::opt<
-				space_s,
-				tao::pegtl::sor<lessequal, greaterequal, less, greater>,
-				space_s,
-				Relational_expression
-			>
+            tao::pegtl::pad<tao::pegtl::sor<lessequal, greaterequal, less, greater>, space>
         > {};
 
-        struct Equality_expression : tao::pegtl::seq<
+        struct Equality_expression : tao::pegtl::list<
             Relational_expression,
-			tao::pegtl::opt<
-				space_s,
-				tao::pegtl::sor<equalequal, notequal>,
-				space_s,
-				Equality_expression
-			>
+            tao::pegtl::pad<tao::pegtl::sor<equalequal, notequal>, space>
         > {};
 
-        struct Logical_AND_expression : tao::pegtl::seq<
+        struct Logical_AND_expression : tao::pegtl::list<
             Equality_expression,
-            tao::pegtl::opt<space_s, andand, space_s, Logical_AND_expression>
+            tao::pegtl::pad<andand, space>
         > {};
 
-        struct Logical_OR_expression : tao::pegtl::seq<
+        struct Logical_OR_expression : tao::pegtl::list<
             Logical_AND_expression,
-            tao::pegtl::opt<space_s, oror, space_s, Logical_OR_expression>
+            tao::pegtl::pad<oror, space>
         > {};
 
-        struct Conditional_expression : tao::pegtl::sor<
-            tao::pegtl::seq<
-                Logical_OR_expression, space_s,
+        struct Conditional_expression : tao::pegtl::seq<
+            Logical_OR_expression,
+            tao::pegtl::opt<
+                space_s,
                 question, space_s,
                 Expression, space_s,
                 colon, space_s,
                 Conditional_expression
-            >,
-            Logical_OR_expression
+            >
         > {};
 
         struct Assignment_operator;
@@ -234,8 +219,6 @@ namespace Parser {
             Assignment_expression,
             tao::pegtl::pad<comma, space>
         > {};
-
-        struct Constant_expression : Conditional_expression {};
 
         struct Init_declarator_list;
         struct Declaration : tao::pegtl::seq<
