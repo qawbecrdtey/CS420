@@ -9,7 +9,15 @@
 #include "Grammar.hpp"
 
 namespace Parser {
+	using namespace std::literals::string_view_literals;
+
     struct node : tao::pegtl::parse_tree::basic_node<node> {
+
+		std::string_view corresponding_string;
+
+		node() {
+
+		}
 
         void dfs() {
             for (auto&& next : children) {
@@ -123,7 +131,7 @@ namespace Parser {
     template<>
     struct selector<Primary_expression> : std::true_type {
         static void transform(std::unique_ptr<node>& n) {
-            if (n->children.size() == 1) {
+			if (n->children.size() == 1) {
                 n = std::move(n->children[0]);
             }
             else if (n->children.size() == 3) {
@@ -132,23 +140,41 @@ namespace Parser {
             else throw std::exception();
         }
     };
-    
     template<>
     struct selector<Postfix_expression> : std::true_type {
         static void transform(std::unique_ptr<node>& n) {
-            if (n->children.size() == 1) {
+			if (n->children.size() == 1) {
                 n = std::move(n->children[0]);
                 return;
             }
-
         }
     };
-    template<>
-    struct selector<Postfix_expression_R> : std::true_type {
-        static void transform(std::unique_ptr<node>& n) {
+	template<>
+	struct selector<Unary_expression> : std::true_type {
+		static void transform(std::unique_ptr<node>& n) {
+			if (n->children.size() == 1) {
+				n = std::move(n->children[0]);
+			}
+		}
+	};
+	template<>
+	struct selector<Multiplicative_expression> : std::true_type {
+		static void transform(std::unique_ptr<node>& n) {
+			if (n->children.size() == 1) {
+				n = std::move(n->children[0]);
+				return;
+			}
+			auto&& r = std::move(n->children.back());
+			n->children.pop_back();
+			auto&& o = std::move(n->children.back());
+			n->children.pop_back();
+			o->children.emplace_back(std::move(n));
+			o->children.emplace_back(std::move(r));
+			n = std::move(o);
+			transform(n->children[0]);
+		}
+	};
 
-        }
-    };
 }
 
 #endif

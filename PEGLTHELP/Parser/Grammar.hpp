@@ -166,14 +166,9 @@ namespace Parser {
 
         struct Unary_operator : tao::pegtl::sor<star, plus, minus, exclamation> {};
 
-        struct Multiplicative_expression : tao::pegtl::seq<
+        struct Multiplicative_expression : tao::pegtl::list<
             Unary_expression,
-			tao::pegtl::opt<
-				space_s,
-				tao::pegtl::sor<star, slash, percent>,
-				space_s,
-				Multiplicative_expression
-			>
+			tao::pegtl::pad<tao::pegtl::sor<star, slash, percent>, space>
         > {};
 
         struct Additive_expression : tao::pegtl::seq<
