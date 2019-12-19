@@ -8,12 +8,13 @@
 
 #include <tao/pegtl.hpp>
 #include <tao/pegtl/contrib/parse_tree.hpp>
+#include <tao/pegtl/contrib/parse_tree_to_dot.hpp>
 
 //#include "ASCII.hpp"
 //#include "syntax_tree_node.hpp"
 #include "Parser/Grammar.hpp"
 #include "Parser/Action.hpp"
-
+#include "Parser/Node.hpp"
 inline std::string_view substr(std::string_view base, std::uint64_t pos = 0, std::uint64_t len = std::string_view::npos) { return base.substr(pos, len); }
 
 int main(int argc, char* argv[]) {
@@ -51,7 +52,8 @@ int main(int argc, char* argv[]) {
 		Parser::Identifier_map_stack ims;
 		Parser::Identifier_storage_vector isv;
 		tao::pegtl::memory_input in(source, "");
-		auto root = tao::pegtl::parse_tree::parse<Parser::grammar>(in);
+		auto root = tao::pegtl::parse_tree::parse<Parser::grammar, Parser::node, Parser::selector>(in);
+		tao::pegtl::parse_tree::print_dot(std::cout, *root);
 		//auto b = tao::pegtl::parse<Parser::grammar, Parser::action>(in, ims, isv);
 		//std::cout << (b ? "true" : "false") << std::endl;
 	}
