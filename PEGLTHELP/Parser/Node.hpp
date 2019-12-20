@@ -94,8 +94,6 @@ namespace Parser {
     template<>
     struct selector<dot> : std::true_type {};
     template<>
-    struct selector<comma> : std::true_type {};
-    template<>
     struct selector<semicolon> : std::true_type {};
     template<>
     struct selector<string_literal> : std::true_type {};
@@ -296,14 +294,20 @@ namespace Parser {
             }
         }
     };
-
+    
     template<>
     struct selector<Declaration> : std::true_type {
         static void transform(std::unique_ptr<node>& n) {
             n->remove_content();
             auto t = std::move(n->children[0]);
             auto l = std::move(n->children[1]);
-            
+            /* NOT DONE */
+        }
+    };
+    template<>
+    struct selector<Init_declarator_list> : std::true_type {
+        static void transform(std::unique_ptr<node>& n) {
+
         }
     };
 }

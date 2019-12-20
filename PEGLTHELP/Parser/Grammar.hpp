@@ -223,8 +223,8 @@ namespace Parser {
         struct Init_declarator_list;
         struct Declaration : tao::pegtl::seq<
             Type_specifier,
-            spaces,
-            tao::pegtl::opt<Init_declarator_list, space_s>,
+            tao::pegtl::opt<spaces, Init_declarator_list>,
+            space_s,
             semicolon
         > {};
 
