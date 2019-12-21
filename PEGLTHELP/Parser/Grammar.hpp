@@ -229,9 +229,9 @@ namespace Parser {
         > {};
 
         struct Init_declarator;
-        struct Init_declarator_list : tao::pegtl::seq<
+        struct Init_declarator_list : tao::pegtl::list<
             Init_declarator,
-			tao::pegtl::opt<space_s, comma, space_s, Init_declarator_list>
+            tao::pegtl::pad<comma, space>
         > {};
 
         struct Declarator;
@@ -255,19 +255,15 @@ namespace Parser {
             tao::pegtl::opt<Direct_declarator_R>
         > {};
 
-		struct Parameter_type_list : tao::pegtl::list<
-			Type_specifier,
-			tao::pegtl::pad<comma, space>
-		> {};
-
         struct Direct_declarator_R : tao::pegtl::seq<
             space_s,
             tao::pegtl::sor<
                 tao::pegtl::seq<openbrack, space_s, Assignment_expression, space_s, closebrack>,
-                tao::pegtl::seq<openparen, space_s, Parameter_list, space_s, closeparen>,
-				tao::pegtl::seq<openparen, space_s, Parameter_type_list, space_s, closeparen>,
-                tao::pegtl::seq<openparen, space_s, Identifier_list, space_s, closeparen>,
-                tao::pegtl::seq<openparen, space_s, closeparen>
+                tao::pegtl::seq<
+                    openparen, space_s,
+                    tao::pegtl::opt<tao::pegtl::sor<Parameter_list, Identifier_list>>,
+                    space_s, closeparen
+                >
             >,
             tao::pegtl::opt<Direct_declarator_R>
         > {};

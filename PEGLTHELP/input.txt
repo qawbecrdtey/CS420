@@ -1,6 +1,8 @@
+int f(int *a) {return *a;}
 int main() {
-	int t = 2000;
+	int t = 2000, y=         3000,		z[3];
 	int x = -t + t * 2000 < 0 ? 1 : -1;
+	t=y=z;
 	printf("Hello world! %d", x);
 	return 110;
 }

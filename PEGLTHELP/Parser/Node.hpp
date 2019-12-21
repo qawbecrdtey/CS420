@@ -275,7 +275,11 @@ namespace Parser {
         static void transform(std::unique_ptr<node>& n) {
             if (n->children.size() == 1) {
                 n = std::move(n->children[0]);
+                return;
             }
+            n->children[1] = std::move(n->children[2]);
+            n->children[2] = std::move(n->children[4]);
+            n->children.resize(3);
         }
     };
     template<>
@@ -283,7 +287,13 @@ namespace Parser {
         static void transform(std::unique_ptr<node>& n) {
             if (n->children.size() == 1) {
                 n = std::move(n->children[0]);
+                return;
             }
+            n->remove_content();
+            auto o = std::move(n->children[1]);
+            o->children.emplace_back(std::move(n->children[0]));
+            o->children.emplace_back(std::move(n->children[2]));
+            n = std::move(o);
         }
     };
     template<>
@@ -301,13 +311,55 @@ namespace Parser {
             n->remove_content();
             auto t = std::move(n->children[0]);
             auto l = std::move(n->children[1]);
-            /* NOT DONE */
+            n = std::move(t);
+            n->children = std::move(l->children);
         }
     };
     template<>
-    struct selector<Init_declarator_list> : std::true_type {
+    struct selector<Init_declarator_list> : std::true_type {};
+    template<>
+    struct selector<Init_declarator> : std::true_type {
         static void transform(std::unique_ptr<node>& n) {
+            if (n->children.size() == 1) {
+                n = std::move(n->children[0]);
+                return;
+            }
+            n->remove_content();
+            auto r = std::move(n->children[2]);
+            auto o = std::move(n->children[1]);
+            o->children.emplace_back(std::move(n->children[0]));
+            o->children.emplace_back(std::move(r));
+            n = std::move(o);
+        }
+    };
+    template<>
+    struct selector<Declarator> : std::true_type {
+        static void transform(std::unique_ptr<node>& n) {
+            if (n->children.size() == 1) {
+                n = std::move(n->children[0]);
+                return;
+            }/*
+            n->remove_content();
+            auto s = std::move(n->children[0]);
+            s->children.emplace_back(std::move(n->children[1]));
+            n = std::move(s);*/
+        }
+    };
+    template<>
+    struct selector<Direct_declarator> : std::true_type {
+        static void transform(std::unique_ptr<node>& n) {
+            if (n->children.size() == 1) {
+                n = std::move(n->children[0]);
+                return;
+            }
+            n->remove_content();
 
+        }
+    };
+    template<>
+    struct selector<Direct_declarator_R> : std::true_type {
+        static void transform(std::unique_ptr<node>& n) {
+            
         }
     };
 }
