@@ -60,15 +60,23 @@ namespace Parser {
     };
     struct node : tao::pegtl::parse_tree::basic_node<node> {
 
-		std::string_view corresponding_string;
+        Marker marker;
 
         template<typename Rule, typename Input, typename... States>
         void start(Input const& in, States&&...) {
             set_type<Rule>();
             source = in.source();
             m_begin = tao::pegtl::internal::iterator(in.iterator());
-            if constexpr (std::is_same_v<Rule, plusequal>) {
 
+            // TODO : Add information in marker.
+            // If needed, add more else if constexpr rules.
+            // Check https://github.com/taocpp/PEGTL/blob/master/doc/Parse-Tree.md
+            //
+            // Information on start:
+            // All non-root nodes receive a call to start() when
+            // a match is attempted for Rule in a parsing run...
+            if constexpr (std::is_same_v<Rule, plusequal>) {
+                
             }
             else if constexpr (std::is_same_v<Rule, minusequal>) {
 
