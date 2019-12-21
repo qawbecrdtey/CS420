@@ -76,140 +76,143 @@ namespace Parser {
             // All non-root nodes receive a call to start() when
             // a match is attempted for Rule in a parsing run...
             if constexpr (std::is_same_v<Rule, plusequal>) {
-                
+				marker = Marker::plusequal;
             }
             else if constexpr (std::is_same_v<Rule, minusequal>) {
-
+				marker = Marker::minusequal;
             }
             else if constexpr (std::is_same_v<Rule, starequal>) {
-
+				marker = Marker::starequal;
             }
             else if constexpr (std::is_same_v<Rule, slashequal>) {
-
+				marker = Marker::slashequal;
             }
             else if constexpr (std::is_same_v<Rule, percentequal>) {
-
+				marker = Marker::percentequal;
             }
             else if constexpr (std::is_same_v<Rule, equalequal>) {
-
+				marker = Marker::equalequal;
             }
             else if constexpr (std::is_same_v<Rule, notequal>) {
-
+				marker = Marker::notequal;
             }
             else if constexpr (std::is_same_v<Rule, lessequal>) {
-
+				marker = Marker::lessequal;
             }
             else if constexpr (std::is_same_v<Rule, greaterequal>) {
-
+				marker = Marker::greaterequal;
             }
             else if constexpr (std::is_same_v<Rule, plusplus>) {
-
+				marker = Marker::plusplus;
             }
             else if constexpr (std::is_same_v<Rule, minusminus>) {
-
+				marker = Marker::minusminus;
             }
             else if constexpr (std::is_same_v<Rule, andand>) {
-
+				marker = Marker::andand;
             }
             else if constexpr (std::is_same_v<Rule, oror>) {
-
+				marker = Marker::oror;
             }
             else if constexpr (std::is_same_v<Rule, equal>) {
-
+				marker = Marker::equal;
             }
             else if constexpr (std::is_same_v<Rule, plus>) {
-
+				marker = Marker::plus;
             }
             else if constexpr (std::is_same_v<Rule, minus>) {
-
+				marker = Marker::minus;
             }
             else if constexpr (std::is_same_v<Rule, star>) {
-
+				marker = Marker::star;
             }
             else if constexpr (std::is_same_v<Rule, slash>) {
-
+				marker = Marker::slash;
             }
             else if constexpr (std::is_same_v<Rule, percent>) {
-
+				marker = Marker::percent;
             }
             else if constexpr (std::is_same_v<Rule, backslash>) {
-
+				marker = Marker::backslash;
             }
             else if constexpr (std::is_same_v<Rule, exclamation>) {
-
+				marker = Marker::exclamation;
             }
             else if constexpr (std::is_same_v<Rule, question>) {
-
+				marker = Marker::question;
             }
             else if constexpr (std::is_same_v<Rule, colon>) {
-
+				marker = Marker::colon;
             }
             else if constexpr (std::is_same_v<Rule, less>) {
-
+				marker = Marker::less;
             }
             else if constexpr (std::is_same_v<Rule, greater>) {
-
+				marker = Marker::greater;
             }
             else if constexpr (std::is_same_v<Rule, openparen>) {
-
+				marker = Marker::openparen;
             }
             else if constexpr (std::is_same_v<Rule, closeparen>) {
-
+				marker = Marker::closeparen;
             }
             else if constexpr (std::is_same_v<Rule, opencurly>) {
-
+				marker = Marker::opencurly;
             }
             else if constexpr (std::is_same_v<Rule, closecurly>) {
-
+				marker = Marker::closecurly;
             }
             else if constexpr (std::is_same_v<Rule, openbrack>) {
-
+				marker = Marker::openbrack;
             }
             else if constexpr (std::is_same_v<Rule, closebrack>) {
-
+				marker = Marker::closebrack;
             }
             else if constexpr (std::is_same_v<Rule, dot>) {
-
+				marker = Marker::dot;
             }
             else if constexpr (std::is_same_v<Rule, string_literal>) {
-
+				marker = Marker::string_literal;
             }
             else if constexpr (std::is_same_v<Rule, break_keyword>) {
-
+				marker = Marker::break_keyword;
             }
             else if constexpr (std::is_same_v<Rule, continue_keyword>) {
-
+				marker = Marker::continue_keyword;
             }
             else if constexpr (std::is_same_v<Rule, else_keyword>) {
-
+				marker = Marker::else_keyword;
             }
             else if constexpr (std::is_same_v<Rule, float_keyword>) {
-
+				marker = Marker::float_keyword;
             }
             else if constexpr (std::is_same_v<Rule, for_keyword>) {
-
+				marker = Marker::for_keyword;
             }
             else if constexpr (std::is_same_v<Rule, if_keyword>) {
-
+				marker = Marker::if_keyword;
             }
             else if constexpr (std::is_same_v<Rule, int_keyword>) {
-
+				marker = Marker::int_keyword;
             }
             else if constexpr (std::is_same_v<Rule, return_keyword>) {
-
+				marker = Marker::return_keyword;
             }
             else if constexpr (std::is_same_v<Rule, void_keyword>) {
-
+				marker = Marker::void_keyword;
             }
             else if constexpr (std::is_same_v<Rule, while_keyword>) {
-
+				marker = Marker::while_keyword;
             }
             else if constexpr (std::is_same_v<Rule, Int_number>) {
-
+				marker = Marker::Int_number;
             }
             else if constexpr (std::is_same_v<Rule, Float_number>) {
-
+				marker = Marker::Float_number;
             }
+			else {
+				marker = Marker::None;
+			}
         }
 
         void dfs() {
