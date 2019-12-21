@@ -84,12 +84,6 @@ namespace Parser {
 	    }
 	};
 	template<>
-	struct action<Declaration_list> {
-	    template<typename Input>
-	    static void apply(Input const &in, Identifier_map_stack &ims, Identifier_storage_vector &isv) {
-	    }
-	};
-	template<>
 	struct action<int_keyword> {
 	    template<typename Input>
 	    static void apply(Input const &in, Identifier_map_stack &ims, Identifier_storage_vector &isv) {

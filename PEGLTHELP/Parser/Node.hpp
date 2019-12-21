@@ -94,8 +94,6 @@ namespace Parser {
     template<>
     struct selector<dot> : std::true_type {};
     template<>
-    struct selector<semicolon> : std::true_type {};
-    template<>
     struct selector<string_literal> : std::true_type {};
 
     template<>
@@ -359,7 +357,112 @@ namespace Parser {
     template<>
     struct selector<Direct_declarator_R> : std::true_type {
         static void transform(std::unique_ptr<node>& n) {
-            
+            if (n->children.back()->children.size()) {
+                auto c = std::move(n->children.back()->children);
+                n->children.pop_back();
+                for (uint64_t i = 0; i < c.size(); i++) {
+                    n->children.emplace_back(std::move(c[i]));
+                }
+            }
+        }
+    };
+    template<>
+    struct selector<Parameter_list> : std::true_type {
+        static void transform(std::unique_ptr<node>& n) {
+            if (n->children.size() == 1) {
+                n = std::move(n->children[0]);
+            }
+        }
+    };
+    template<>
+    struct selector<Parameter_declaration> : std::true_type {
+        static void transform(std::unique_ptr<node>& n) {
+            if (n->children.size() == 1) {
+                n = std::move(n->children[0]);
+                return;
+            }
+            auto l = std::move(n->children[0]);
+            l->children.emplace_back(std::move(n->children[1]));
+            n = std::move(l);
+        }
+    };
+    template<>
+    struct selector<Identifier_list> : std::true_type {};
+    
+    template<>
+    struct selector<Compound_statement> : std::true_type {
+        static void transform(std::unique_ptr<node>& n) {
+            n->remove_content();
+            std::vector<std::unique_ptr<node>> v;
+            v.reserve(n->children.size() - 2);
+            for (uint64_t i = 1; i < n->children.size() - 1; i++) {
+                v.emplace_back(std::move(n->children[i]));
+            }
+            n->children = std::move(v);
+        }
+    };
+    template<>
+    struct selector<Expression_statement> : std::true_type {};
+    template<>
+    struct selector<Selection_statement> : std::true_type {
+        static void transform(std::unique_ptr<node>& n) {
+            n->remove_content();
+            auto fst = std::move(n->children[0]);
+            auto trd = std::move(n->children[2]);
+            auto fth = std::move(n->children[4]);
+            if (n->children.size() == 5) {
+                fst->children.emplace_back(std::move(trd));
+                fst->children.emplace_back(std::move(fth));
+            }
+            else if (n->children.size() == 7) {
+                auto sth = std::move(n->children[6]);
+                fst->children.emplace_back(std::move(trd));
+                fst->children.emplace_back(std::move(fth));
+                fst->children.emplace_back(std::move(sth));
+            }
+            else throw std::exception();
+            n = std::move(fst);
+        }
+    };
+    template<>
+    struct selector<While_statement> : std::true_type {
+        static void transform(std::unique_ptr<node>& n) {
+            n->remove_content();
+            auto fst = std::move(n->children[0]);
+            fst->children.emplace_back(std::move(n->children[2]));
+            fst->children.emplace_back(std::move(n->children[4]));
+            n = std::move(fst);
+        }
+    };
+    template<>
+    struct selector<For_statement> : std::true_type {
+        static void transform(std::unique_ptr<node>& n) {
+            n->remove_content();
+            auto fst = std::move(n->children[0]);
+            fst->children.emplace_back(std::move(n->children[2]));
+            fst->children.emplace_back(std::move(n->children[3]));
+            fst->children.emplace_back(std::move(n->children[4]));
+            fst->children.emplace_back(std::move(n->children[6]));
+            n = std::move(fst);
+        }
+    };
+    template<>
+    struct selector<Jump_statement> : std::true_type {
+        static void transform(std::unique_ptr<node>& n) {
+            auto fst = std::move(n->children[0]);
+            if (n->children.size() == 3) {
+                fst->children.emplace_back(std::move(n->children[1]));
+            }
+            n = std::move(fst);
+        }
+    };
+    template<>
+    struct selector<External_declaration> : std::true_type {
+        static void transform(std::unique_ptr<node>& n) {
+            auto fst = std::move(n->children[0]);
+            fst->children.emplace_back(std::move(n->children[1]));
+            fst->children.emplace_back(std::move(n->children[2]));
+            n = std::move(fst);
         }
     };
 }

@@ -159,9 +159,10 @@ namespace Parser {
         struct Unary_operator;
         struct Unary_expression : tao::pegtl::sor<
             Postfix_expression,
-            tao::pegtl::seq<plusplus, Unary_expression>,
-            tao::pegtl::seq<minusminus, Unary_expression>,
-            tao::pegtl::seq<Unary_operator, Unary_expression>
+            tao::pegtl::seq<
+                tao::pegtl::sor<plusplus, minusminus, Unary_operator>,
+                Unary_expression
+            >
         > {};
 
         struct Unary_operator : tao::pegtl::sor<star, plus, minus, exclamation> {};
@@ -283,8 +284,7 @@ namespace Parser {
         //struct Declaration_specifiers;
         struct Parameter_declaration : tao::pegtl::seq<
             Type_specifier,
-            spaces,
-			Declarator
+            tao::pegtl::opt<spaces, Declarator>
         > {};
 
         struct Identifier_list : tao::pegtl::list<
@@ -335,30 +335,29 @@ namespace Parser {
             >
         > {};
 
-        struct Iteration_statement : tao::pegtl::sor<
-            tao::pegtl::seq<
-                while_keyword, space_s,
-                openparen, space_s,
-                Expression, space_s,
-                closeparen, space_s,
-                Statement
+        struct While_statement : tao::pegtl::seq<
+            while_keyword, space_s,
+            openparen, space_s,
+            Expression, space_s,
+            closeparen, space_s,
+            Statement
+        > {};
+        struct For_statement : tao::pegtl::seq<
+            for_keyword, space_s,
+            openparen,
+            tao::pegtl::sor<
+                Expression_statement,
+                Declaration
             >,
-            tao::pegtl::seq<
-                for_keyword, space_s,
-                openparen,
-                tao::pegtl::sor<
-                    tao::pegtl::seq<
-                        tao::pegtl::pad_opt<Expression, space>,
-                        semicolon
-                    >,
-                    Declaration
-                >,
-                tao::pegtl::pad_opt<Expression, space>,
-                semicolon,
-                tao::pegtl::pad_opt<Expression, space>,
-                closeparen, space_s,
-                Statement
-            >
+            space_s,
+            Expression_statement, space_s,
+            Expression,
+            closeparen, space_s,
+            Statement
+        > {};
+        struct Iteration_statement : tao::pegtl::sor<
+            While_statement,
+            For_statement
         > {};
 
         struct Jump_statement : tao::pegtl::seq<
@@ -375,16 +374,11 @@ namespace Parser {
         > {};
 
         struct External_declaration;
-		struct External_declaration_list_R;
-        struct External_declaration_list : tao::pegtl::seq<External_declaration, tao::pegtl::opt<External_declaration_list_R>> {};
+        struct External_declaration_list : tao::pegtl::list<
+            External_declaration,
+            space
+        > {};
 
-		struct External_declaration_list_R : tao::pegtl::seq<
-			space_s,
-			External_declaration,
-			tao::pegtl::opt<External_declaration_list_R>
-		> {};
-
-        struct Declaration_list;
         struct External_declaration : tao::pegtl::seq<
             Type_specifier,
             spaces,
@@ -392,11 +386,6 @@ namespace Parser {
             space_s,
             Compound_statement
         > {};
-
-        struct Declaration_list : tao::pegtl::list<
-			Declaration,
-			space_s
-		> {};
     }
     struct grammar : tao::pegtl::seq<space_s, External_declaration_list, space_s, tao::pegtl::eof> {};
 }
