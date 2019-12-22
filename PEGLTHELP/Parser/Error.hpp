@@ -4,8 +4,8 @@
 #include <iostream>
 #include <type_traits>
 
-#include <tao/pegtl.hpp>
 #include <tao/pegtl/contrib/parse_tree.hpp>
 
 #include "Grammar.hpp"
 
+#endif
