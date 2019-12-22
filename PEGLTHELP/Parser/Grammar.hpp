@@ -342,15 +342,17 @@ namespace Parser {
             closeparen, space_s,
             Statement
         > {};
-        struct For_statement : tao::pegtl::seq<
+        struct For_statement : tao::pegtl::seq <
             for_keyword, space_s,
-            openparen,
+            openparen, space_s,
             tao::pegtl::sor<
-                Expression_statement,
+                semicolon,
+                tao::pegtl::seq<Expression, semicolon>,
                 Declaration
             >,
             space_s,
-            Expression_statement, space_s,
+            Expression,
+            semicolon, space_s,
             Expression,
             closeparen, space_s,
             Statement
