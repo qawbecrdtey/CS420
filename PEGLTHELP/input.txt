@@ -1,5 +1,5 @@
 float avg(int n, int *a) {
-	int sum=0;
+	float sum=0;
 	for(int i=0;i<n;i++) {
 		sum+=a[i];
 	}
@@ -7,10 +7,9 @@ float avg(int n, int *a) {
 }
 int main() {
 	int n=100;
-	int sum = 0;
+	float sum = 0;
 	for(int i=0;i<n;i++){
 		sum+=i;
 		printf("%d\n",-i);
 	}
 	printf("sum = %d", sum);
-}

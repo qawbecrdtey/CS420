@@ -57,7 +57,7 @@ int main(int argc, char* argv[]) {
 		tao::pegtl::parse_tree::print_dot(std::cout, *root);
 		//auto b = tao::pegtl::parse<Parser::grammar, Parser::action>(in, ims, isv);
 		//std::cout << (b ? "true" : "false") << std::endl;
-		//root->dfs();
+		root->statement_dfs();
 	}
 	catch (std::exception & e) {
 		std::cout << e.what() << std::endl;

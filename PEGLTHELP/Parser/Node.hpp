@@ -12,6 +12,7 @@ namespace Parser {
 	using namespace std::literals::string_view_literals;
     enum class Marker {
         None,
+        Error,
         plusequal,
         minusequal,
         starequal,
@@ -57,10 +58,55 @@ namespace Parser {
         while_keyword,
         Int_number,
         Float_number,
+        Paren,
+        Curly,
+        Brack,
     };
     struct node : tao::pegtl::parse_tree::basic_node<node> {
 
         Marker marker;
+
+        node(Marker marker = Marker::None) : basic_node(), marker(marker) {};
+        /*
+        static std::unique_ptr<node> error_node(std::unique_ptr<node> const& n) {
+            std::unique_ptr<node> p = std::make_unique<node>(Marker::Error);
+            p->children = std::move(n->children);
+            p->m_begin = std::move(n->m_begin);
+            p->m_end = std::move(n->m_end);
+            return std::move(p);
+        }*/
+        static std::unique_ptr<node> paren_node(std::unique_ptr<node> const& n) {
+            if (n->children[0]->marker == Marker::openparen && n->children.back()->marker == Marker::closeparen) {
+                std::unique_ptr<node> p = std::make_unique<node>(Marker::Paren);
+                p->children = std::move(n->children);
+                p->m_begin = std::move(n->m_begin);
+                p->m_end = std::move(n->m_end);
+                return std::move(p);
+            }
+            else return nullptr;
+        }
+        static std::unique_ptr<node> curly_node(std::unique_ptr<node> const& n) {
+            if (n->children[0]->marker == Marker::opencurly && n->children.back()->marker == Marker::closecurly) {
+                std::unique_ptr<node> p = std::make_unique<node>(Marker::Curly);
+                p->children = std::move(n->children);
+                p->children = std::move(n->children);
+                p->m_begin = std::move(n->m_begin);
+                p->m_end = std::move(n->m_end);
+                return std::move(p);
+            }
+            else return nullptr;
+        }
+        static std::unique_ptr<node> brack_node(std::unique_ptr<node> const& n) {
+            if (n->children[0]->marker == Marker::openbrack && n->children.back()->marker == Marker::closebrack) {
+                std::unique_ptr<node> p = std::make_unique<node>(Marker::Brack);
+                p->children = std::move(n->children);
+                p->children = std::move(n->children);
+                p->m_begin = std::move(n->m_begin);
+                p->m_end = std::move(n->m_end);
+                return std::move(p);
+            }
+            else return nullptr;
+        }
 
         template<typename Rule, typename Input, typename... States>
         void start(Input const& in, States&&...) {
@@ -215,10 +261,23 @@ namespace Parser {
 			}
         }
 
+        template<typename Rule, typename Input, typename... States>
+        void failure(Input const&, States&&...) noexcept {
+
+        }
+
         void dfs() {
             if (this->has_content()) std::cout << this->string_view() << std::endl;
-            for (auto&& next : children) {
+            for (auto&& next : this->children) {
                 next->dfs();
+            }
+        }
+
+        void statement_dfs() {
+            if ((this->marker == Marker::int_keyword || this->marker == Marker::float_keyword) && this->has_content())
+                std::cout << this->string_view() << std::endl;
+            for (auto&& next : this->children) {
+                next->statement_dfs();
             }
         }
     };
