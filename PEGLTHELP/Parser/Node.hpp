@@ -412,6 +412,8 @@ namespace Parser {
                 n = std::move(n->children[0]);
                 return;
             }
+            n->children[0]->children.emplace_back(std::move(n->children[1]));
+            n = std::move(n->children[0]);
         }
     };
     template<>
@@ -433,10 +435,8 @@ namespace Parser {
 				n = std::move(n->children[0]);
                 return;
 			}
-            auto r = std::move(n->children[1]);
             auto u = std::move(n->children[0]);
-            n->children.clear();
-            u->children.emplace_back(std::move(r));
+            u->children.emplace_back(std::move(n->children[1]));
             n = std::move(u);
 		}
 	};

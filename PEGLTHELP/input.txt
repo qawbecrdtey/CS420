@@ -10,7 +10,7 @@ float avg(int length, int *value) {
 }
 // start of a main function
 int main(void) {
-	int count, i, total = 1 ? 0 : 2;
+	int count, i, total = 1+2*3+4;
 	int record[5];
 	float average;
 

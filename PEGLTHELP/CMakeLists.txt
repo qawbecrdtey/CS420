@@ -12,6 +12,7 @@ add_executable(
         Parser/Grammar.hpp
         Parser/Action.hpp
         Parser/Node.hpp
+        Parser/Block.hpp
 )
 
 target_link_libraries(${PROJECT_NAME} LINK_PUBLIC taocpp::pegtl)

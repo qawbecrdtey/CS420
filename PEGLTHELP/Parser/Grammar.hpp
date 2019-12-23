@@ -318,7 +318,7 @@ namespace Parser {
         > {};
 
         struct Block_item;
-        struct Block_item_list : tao::pegtl::list< Block_item, space_s> {};
+        struct Block_item_list : tao::pegtl::list<Block_item, space_s> {};
 
         struct Block_item : tao::pegtl::sor<Declaration, Statement> {};
 
