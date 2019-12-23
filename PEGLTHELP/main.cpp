@@ -15,7 +15,7 @@
 #include "Parser/Grammar.hpp"
 #include "Parser/Action.hpp"
 #include "Parser/Node.hpp"
-#include "Parser/Error.hpp"
+//#include "Parser/Error.hpp"
 inline std::string_view substr(std::string_view base, std::uint64_t pos = 0, std::uint64_t len = std::string_view::npos) { return base.substr(pos, len); }
 
 int main(int argc, char* argv[]) {

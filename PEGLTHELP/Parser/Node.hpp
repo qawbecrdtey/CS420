@@ -215,12 +215,25 @@ namespace Parser {
 			}
         }
 
+		template<typename Rule, typename Input, typename... States>
+		void failure(Input const&, States&&...) noexcept {
+
+		}
+
         void dfs() {
             if (this->has_content()) std::cout << this->string_view() << std::endl;
             for (auto&& next : children) {
                 next->dfs();
             }
         }
+
+		void statement_dfs() {
+			if ((this->marker == Marker::int_keyword || this->marker == Marker::float_keyword) && this->has_content())
+				std::cout << this->string_view() << std::endl;
+			for (auto&& next : this->children) {
+				next->statement_dfs();
+			}
+		}
     };
 
     template<typename Rule>
