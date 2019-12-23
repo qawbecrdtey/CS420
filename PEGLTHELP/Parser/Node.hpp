@@ -12,7 +12,6 @@ namespace Parser {
 	using namespace std::literals::string_view_literals;
     enum class Marker {
         None,
-        Error,
         plusequal,
         minusequal,
         starequal,
@@ -58,9 +57,9 @@ namespace Parser {
         while_keyword,
         Int_number,
         Float_number,
-        Paren,
-        Curly,
-        Brack,
+		Paren,
+		Curly,
+		Brack
     };
     struct node : tao::pegtl::parse_tree::basic_node<node> {
 
@@ -121,6 +120,7 @@ namespace Parser {
             }
             else return nullptr;
         }
+
 
         template<typename Rule, typename Input, typename... States>
         void start(Input const& in, States&&...) {
@@ -275,25 +275,25 @@ namespace Parser {
 			}
         }
 
-        template<typename Rule, typename Input, typename... States>
-        void failure(Input const&, States&&...) noexcept {
+		template<typename Rule, typename Input, typename... States>
+		void failure(Input const&, States&&...) noexcept {
 
-        }
+		}
 
         void dfs() {
             if (this->has_content()) std::cout << this->string_view() << std::endl;
-            for (auto&& next : this->children) {
+            for (auto&& next : children) {
                 next->dfs();
             }
         }
 
-        void statement_dfs() {
-            if ((this->marker == Marker::int_keyword || this->marker == Marker::float_keyword) && this->has_content())
-                std::cout << this->string_view() << std::endl;
-            for (auto&& next : this->children) {
-                next->statement_dfs();
-            }
-        }
+		void statement_dfs() {
+			if ((this->marker == Marker::int_keyword || this->marker == Marker::float_keyword) && this->has_content())
+				std::cout << this->string_view() << std::endl;
+			for (auto&& next : this->children) {
+				next->statement_dfs();
+			}
+		}
     };
 
     template<typename Rule>
