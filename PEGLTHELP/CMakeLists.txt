@@ -12,6 +12,7 @@ add_executable(
         Parser/Grammar.hpp
         Parser/Action.hpp
         Parser/Node.hpp
+        Parser/Error.hpp
         Parser/Block.hpp
 )
 

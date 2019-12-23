@@ -5,6 +5,7 @@
 #include <type_traits>
 
 #include "Grammar.hpp"
+#include "tao/pegtl/parse_error.hpp"
 
 namespace Parser{
 	using namespace tao::pegtl;
@@ -22,7 +23,7 @@ namespace Parser{
 		template< typename Input, typename... States >
 		static void raise(const Input& in, States&&...)
 		{
-			throw tao::petgl::parse_error(error_meg, in);
+			throw tao::pegtl::parse_error(error_msg, in);
 		}
 	};
 

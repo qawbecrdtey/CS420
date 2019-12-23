@@ -324,7 +324,7 @@ namespace Parser {
 
         struct Expression_statement : tao::pegtl::seq<
             tao::pegtl::opt<Expression, space_s>,
-            semicolon
+            tao::pegtl::must<semicolon>
         > {};
 
         struct Selection_statement : tao::pegtl::seq<

@@ -276,8 +276,8 @@ namespace Parser {
         }
 
 		template<typename Rule, typename Input, typename... States>
-		void failure(Input const&, States&&...) noexcept {
-
+		void failure(Input const& in, States&&...) noexcept {
+            std::cout << "Failed to match:\n" << in.position() << std::endl;
 		}
 
         void dfs() {

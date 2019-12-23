@@ -6,9 +6,9 @@
 #include <vector>
 
 namespace Parser {
-    template<typename T, uint64_t SIZE>
+    template<typename T>
     struct type {
-        std::array<T>
+        std::array<T, SIZE> arr;
     };
 }
 
