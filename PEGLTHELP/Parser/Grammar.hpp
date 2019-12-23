@@ -10,7 +10,6 @@ namespace Parser {
         struct digit : tao::pegtl::digit {};
         struct digits : tao::pegtl::plus<digit> {};
         struct number : digits {};
-        struct space : tao::pegtl::space {};
         struct spaces;
         struct space_s;
         struct newline : tao::pegtl::one<'\n'> {};
@@ -66,20 +65,13 @@ namespace Parser {
                 >
             >
         > {};
-        struct spaces : tao::pegtl::plus<
-            tao::pegtl::sor<
-                tao::pegtl::space,
-                linecomment,
-                blockcomment
-            >
+        struct space : tao::pegtl::sor<
+            tao::pegtl::space,
+            linecomment,
+            blockcomment
         > {};
-        struct space_s : tao::pegtl::star<
-            tao::pegtl::sor<
-                tao::pegtl::space,
-                linecomment,
-                blockcomment
-            >
-        > {};
+        struct spaces : tao::pegtl::plus<space> {};
+        struct space_s : tao::pegtl::star<space> {};
 
         // keywords
         struct break_keyword : tao::pegtl::string<'b', 'r', 'e', 'a', 'k'> {};
@@ -142,10 +134,19 @@ namespace Parser {
             tao::pegtl::opt<space_s, Postfix_expression_R>
         > {};
         
+        struct Array_subscript : tao::pegtl::seq<
+            openbrack, space_s,
+            Expression, space_s,
+            closebrack
+        > {};
+        struct Function_call : tao::pegtl::seq<
+            openparen, space_s,
+            tao::pegtl::opt<Argument_expression_list, space_s>,
+            closeparen
+        > {};
         struct Postfix_expression_R : tao::pegtl::sor<
-            tao::pegtl::seq<openbrack, space_s, Expression, space_s, closebrack>,
-            tao::pegtl::seq<openparen, space_s, Argument_expression_list, space_s, closeparen>,
-            tao::pegtl::seq<openparen, space_s, closeparen>,
+            Array_subscript,
+            Function_call,
             plusplus,
             minusminus
         > {};
@@ -256,15 +257,19 @@ namespace Parser {
             tao::pegtl::opt<Direct_declarator_R>
         > {};
 
+        struct Direct_declarator_R_brack : tao::pegtl::seq<
+            openbrack, space_s, Assignment_expression, space_s, closebrack
+        > {};
+        struct Direct_declarator_R_paren : tao::pegtl::seq<
+            openparen, space_s,
+            tao::pegtl::opt<tao::pegtl::sor<Parameter_list, Identifier_list>>,
+            space_s, closeparen
+        > {};
         struct Direct_declarator_R : tao::pegtl::seq<
             space_s,
             tao::pegtl::sor<
-                tao::pegtl::seq<openbrack, space_s, Assignment_expression, space_s, closebrack>,
-                tao::pegtl::seq<
-                    openparen, space_s,
-                    tao::pegtl::opt<tao::pegtl::sor<Parameter_list, Identifier_list>>,
-                    space_s, closeparen
-                >
+                Direct_declarator_R_brack,
+                Direct_declarator_R_paren
             >,
             tao::pegtl::opt<Direct_declarator_R>
         > {};
@@ -378,7 +383,7 @@ namespace Parser {
         struct External_declaration;
         struct External_declaration_list : tao::pegtl::list<
             External_declaration,
-            space
+            spaces
         > {};
 
         struct External_declaration : tao::pegtl::seq<

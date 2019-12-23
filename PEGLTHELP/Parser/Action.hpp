@@ -50,12 +50,15 @@ namespace Parser {
 	struct action<Int_number> {
 		template<typename Input>
 		static void apply(Input const& in, Identifier_map_stack &ims, Identifier_storage_vector &isv) {
+		    std::cout << "Int_number" << std::endl;
+			std::cout << in.string() << std::endl;
 		}
 	};
 	template<>
 	struct action<Assignment_expression> {
 		template<typename Input>
 		static void apply(Input const& in, Identifier_map_stack &ims, Identifier_storage_vector &isv) {
+            std::cout << "Float_number" << std::endl;
 			std::cout << in.string() << std::endl;
 		}
 	};
@@ -63,12 +66,16 @@ namespace Parser {
 	struct action<External_declaration_list> {
 		template<typename Input>
 		static void apply(Input const& in, Identifier_map_stack &ims, Identifier_storage_vector &isv) {
+            std::cout << "External_declaration_list" << std::endl;
+			std::cout << in.string() << std::endl;
 		}
 	};
 	template<>
 	struct action<External_declaration> {
 		template<typename Input>
 		static void apply(Input const& in, Identifier_map_stack &ims, Identifier_storage_vector &isv) {
+            std::cout << "External_declaration" << std::endl;
+			std::cout << in.string() << std::endl;
 		}
 	};
 	template<>
@@ -81,36 +88,45 @@ namespace Parser {
 	struct action<Init_declarator_list> {
 	    template<typename Input>
 	    static void apply(Input const &in, Identifier_map_stack &ims, Identifier_storage_vector &isv) {
+            std::cout << "Init_declarator_list" << std::endl;
+			std::cout << in.string() << std::endl;
 	    }
 	};
 	template<>
 	struct action<int_keyword> {
 	    template<typename Input>
 	    static void apply(Input const &in, Identifier_map_stack &ims, Identifier_storage_vector &isv) {
+            std::cout << "int_keyword" << std::endl;
+			std::cout << in.string() << std::endl;
 	    }
 	};
     template<>
     struct action<float_keyword> {
         template<typename Input>
         static void apply(Input const &in, Identifier_map_stack &ims, Identifier_storage_vector &isv) {
+            std::cout << "float_keyword" << std::endl;
+			std::cout << in.string() << std::endl;
         }
     };
 	template<>
 	struct action<Parameter_declaration> {
 		template<typename Input>
 		static void apply(Input const &in, Identifier_map_stack &ims, Identifier_storage_vector &isv) {
+			std::cout << in.string() << std::endl;
 		}
 	};
 	template<>
 	struct action<Init_declarator> {
 		template<typename Input>
 		static void apply(Input const &in, Identifier_map_stack &ims, Identifier_storage_vector &isv) {
+			std::cout << in.string() << std::endl;
 		}
 	};
 	template<>
 	struct action<identifier> {
 		template<typename Input>
 		static void apply(Input const &in, Identifier_map_stack &ims, Identifier_storage_vector &isv) {
+			std::cout << in.string() << std::endl;
 			isv.push_back(in.string());
 		}
 	};
@@ -118,6 +134,7 @@ namespace Parser {
 	struct action<string_literal> {
 		template<typename Input>
 		static void apply(Input const &in, Identifier_map_stack &ims, Identifier_storage_vector &isv) {
+			std::cout << in.string() << std::endl;
 		}
 	};
 	template<>

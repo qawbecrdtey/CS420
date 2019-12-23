@@ -78,9 +78,14 @@ namespace Parser {
         static std::unique_ptr<node> paren_node(std::unique_ptr<node> const& n) {
             if (n->children[0]->marker == Marker::openparen && n->children.back()->marker == Marker::closeparen) {
                 std::unique_ptr<node> p = std::make_unique<node>(Marker::Paren);
-                p->children = std::move(n->children);
                 p->m_begin = std::move(n->m_begin);
                 p->m_end = std::move(n->m_end);
+                auto const l = n->children.size();
+                std::vector<std::unique_ptr<node>> v;
+                for (uint64_t i = 1; i + 1 < l; i++) {
+                    v.emplace_back(std::move(n->children[i]));
+                }
+                p->children = std::move(v);
                 return std::move(p);
             }
             else return nullptr;
@@ -88,10 +93,14 @@ namespace Parser {
         static std::unique_ptr<node> curly_node(std::unique_ptr<node> const& n) {
             if (n->children[0]->marker == Marker::opencurly && n->children.back()->marker == Marker::closecurly) {
                 std::unique_ptr<node> p = std::make_unique<node>(Marker::Curly);
-                p->children = std::move(n->children);
-                p->children = std::move(n->children);
                 p->m_begin = std::move(n->m_begin);
                 p->m_end = std::move(n->m_end);
+                auto const l = n->children.size();
+                std::vector<std::unique_ptr<node>> v;
+                for (uint64_t i = 1; i + 1 < l; i++) {
+                    v.emplace_back(std::move(n->children[i]));
+                }
+                p->children = std::move(v);
                 return std::move(p);
             }
             else return nullptr;
@@ -100,9 +109,14 @@ namespace Parser {
             if (n->children[0]->marker == Marker::openbrack && n->children.back()->marker == Marker::closebrack) {
                 std::unique_ptr<node> p = std::make_unique<node>(Marker::Brack);
                 p->children = std::move(n->children);
-                p->children = std::move(n->children);
                 p->m_begin = std::move(n->m_begin);
                 p->m_end = std::move(n->m_end);
+                auto const l = n->children.size();
+                std::vector<std::unique_ptr<node>> v;
+                for (uint64_t i = 1; i + 1 < l; i++) {
+                    v.emplace_back(std::move(n->children[i]));
+                }
+                p->children = std::move(v);
                 return std::move(p);
             }
             else return nullptr;
@@ -400,6 +414,18 @@ namespace Parser {
             }
         }
     };
+    template<>
+    struct selector<Array_subscript> : std::true_type {
+        static void transform(std::unique_ptr<node>& n) {
+            n = node::brack_node(n);
+        }
+    };
+    template<>
+    struct selector<Function_call> : std::true_type {
+        static void transform(std::unique_ptr<node>& n) {
+            n = node::paren_node(n);
+        }
+    };
 	template<>
 	struct selector<Unary_expression> : std::true_type {
 		static void transform(std::unique_ptr<node>& n) {
@@ -581,11 +607,10 @@ namespace Parser {
             if (n->children.size() == 1) {
                 n = std::move(n->children[0]);
                 return;
-            }/*
-            n->remove_content();
-            auto s = std::move(n->children[0]);
-            s->children.emplace_back(std::move(n->children[1]));
-            n = std::move(s);*/
+            }
+            n->children[n->children.size() - 2]->children.emplace_back(std::move(n->children.back()));
+            n->children.pop_back();
+            transform(n);
         }
     };
     template<>
@@ -599,23 +624,15 @@ namespace Parser {
         }
     };
     template<>
-    struct selector<Direct_declarator_R> : std::true_type {
+    struct selector<Direct_declarator_R_brack> : std::true_type {
         static void transform(std::unique_ptr<node>& n) {
-            if (n->children.back()->children.size()) {
-                auto c = std::move(n->children.back()->children);
-                n->children.pop_back();
-                for (uint64_t i = 0; i < c.size(); i++) {
-                    n->children.emplace_back(std::move(c[i]));
-                }
-            }
+            n = node::brack_node(n);
         }
     };
     template<>
-    struct selector<Parameter_list> : std::true_type {
+    struct selector<Direct_declarator_R_paren> : std::true_type {
         static void transform(std::unique_ptr<node>& n) {
-            if (n->children.size() == 1) {
-                n = std::move(n->children[0]);
-            }
+            n = node::paren_node(n);
         }
     };
     template<>
@@ -636,12 +653,7 @@ namespace Parser {
     template<>
     struct selector<Compound_statement> : std::true_type {
         static void transform(std::unique_ptr<node>& n) {
-            std::vector<std::unique_ptr<node>> v;
-            v.reserve(n->children.size() - 2);
-            for (uint64_t i = 1; i < n->children.size() - 1; i++) {
-                v.emplace_back(std::move(n->children[i]));
-            }
-            n->children = std::move(v);
+            n = node::curly_node(n);
         }
     };
     template<>
