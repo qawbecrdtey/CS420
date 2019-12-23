@@ -49,17 +49,20 @@ int main(int argc, char* argv[]) {
 	/* FILE INPUT END */
 
 	std::cout << source << std::endl;
+	tao::pegtl::memory_input in(source, "");
 	try {
 		Parser::Identifier_map_stack ims;
 		Parser::Identifier_storage_vector isv;
-		tao::pegtl::memory_input in(source, "");
 		auto root = tao::pegtl::parse_tree::parse<Parser::grammar, Parser::node, Parser::selector>(in);
 		tao::pegtl::parse_tree::print_dot(std::cout, *root);
 		//auto b = tao::pegtl::parse<Parser::grammar, Parser::action>(in, ims, isv);
 		//std::cout << (b ? "true" : "false") << std::endl;
 		root->statement_dfs();
 	}
-	catch (std::exception & e) {
-		std::cout << e.what() << std::endl;
+	catch (const tao::pegtl::parse_error& e) {
+		const auto p = e.positions.front();
+		std::cout << e.what() << std::endl
+			<< in.line_at(p) << std::endl
+			<< std::string(p.byte_in_line, ' ') << '^' << std::endl;
 	}
 }
