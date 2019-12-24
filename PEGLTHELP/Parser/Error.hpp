@@ -28,7 +28,8 @@ namespace Parser{
 	};
 
 	template<> const std::string control<semicolon>::error_msg = "expected ;";
-	template<> const std::string control<digit>::error_msg = "expected digit";
+	template<> const std::string control<Int_number>::error_msg = "expected int number";
+	template<> const std::string control<Float_number>::error_msg = "expected float number";
 	template<> const std::string control<closeparen>::error_msg = "expected )";
 	template<> const std::string control<closecurly>::error_msg = "expected }";
 	template<> const std::string control<closebrack>::error_msg = "expected ]";
@@ -36,6 +37,14 @@ namespace Parser{
 	template<> const std::string control<string_literal>::error_msg = "expected string";
 	template<> const std::string control<comma>::error_msg = "expected ,";
 	template<> const std::string control<Compound_statement>::error_msg = "expected Compound statement";
+	template<> const std::string control<linecomment_end>::error_msg = "expected line comment";
+	template<> const std::string control<blockcomment_end>::error_msg = "expected block comment ending";
+	template<> const std::string control<While_statement_end>::error_msg = "expected While statement ending";
+	template<> const std::string control<For_statement_end>::error_msg = "expected For statement ending";
+	template<> const std::string control<space>::error_msg = "expected space";
+	template<> const std::string control<spaces>::error_msg = "expected spaces";
+	template<> const std::string control<space_s>::error_msg = "expected space_s";
+	template<> const std::string control<Compound_statement_end>::error_msg = "expected Compound statement ending";
 }
 
 #endif

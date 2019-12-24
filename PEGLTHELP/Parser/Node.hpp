@@ -274,12 +274,12 @@ namespace Parser {
 				marker = Marker::None;
 			}
         }
-
+        /*
 		template<typename Rule, typename Input, typename... States>
 		void failure(Input const& in, States&&...) noexcept {
             std::cout << "Failed to match:\n" << in.position() << std::endl;
 		}
-
+        */
         void dfs() {
             if (this->has_content()) std::cout << this->string_view() << std::endl;
             for (auto&& next : children) {
