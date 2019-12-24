@@ -55,7 +55,7 @@ int main(int argc, char* argv[]) {
 		auto const root = tao::pegtl::parse_tree::parse<Parser::grammar, Parser::node, Parser::selector, tao::pegtl::nothing, Parser::control>(in);
 		if (root) {
 			tao::pegtl::parse_tree::print_dot(std::cout, *root);
-			root->statement_dfs();
+			root->root_dfs();
 		}
 		
 		//auto b = tao::pegtl::parse<Parser::grammar, Parser::action>(in, ims, isv);

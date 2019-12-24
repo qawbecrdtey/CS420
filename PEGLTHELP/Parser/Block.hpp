@@ -1,7 +1,7 @@
 #ifndef Parser_Block_hpp
 #define Parser_Block_hpp
 
-
+#include <cassert>
 #include <map>
 #include <memory>
 #include <stack>
@@ -89,31 +89,116 @@ namespace Parser {
 		~Value_level() = default;
 	};
 
-	using identifier_map_stack = std::map<std::string, std::stack<Value_level>>;
+	using identifier_map_stack = std::map<std::string_view, std::stack<Value_level>>;
 
 	struct block {
 		uint64_t level;
 		identifier_map_stack ims;
+		std::vector<std::shared_ptr<block>> next;
 
-		explicit block(uint64_t level) : level(level), ims() {}
+		explicit block(uint64_t level) : level(level), ims(), next() {}
 		block(block const&) = default;
 		block(block&&) = default;
 		block& operator=(block const&) = default;
 		block& operator=(block&&) = default;
+		~block() = default;
 
 		template<typename T>
-		void initialize_identifier(uint64_t level, std::string id, T& t) {
+		bool initialize_identifier(uint64_t level, std::string_view id, T t) {
 			if (ims.find(id) != ims.end() && ims[id].top().level == level) {
 				throw std::runtime_error("There already is a declaration of the identifier in the same level.");
 			}
-			ims[id].push(Value_level(value<T>, level));
+			ims[id].push(Value_level(value<T>(t), level));
 		}
 		template<typename T>
-		void modify_identifier(std::string id, T t) {
+		bool modify_identifier(std::string id, T t) {
 			if (ims.find(id) == ims.end()) {
 				throw std::runtime_error("Identifier not defined.");
 			}
 			set_value(ims[id].top(), t);
+		}
+		void remove_current_level() {
+			assert(level);
+			for (auto& p : ims) {
+				if (p.second.top().level == level) {
+					p.second.pop();
+					if (p.second.empty()) {
+						ims.erase(p.first);
+					}
+				}
+			}
+		}
+
+		// makes a copy of current block.
+		void generate_next_block() {
+			next.emplace_back(std::make_shared<block>(*this));
+		}
+		void connect_next_block(std::shared_ptr<block>& b) {
+			next.emplace_back(b);
+		}
+		void reset_next_block() {
+			next.clear();
+		}
+	};
+
+	enum class TYPE : int { _int, _float, _starint, _starfloat };
+
+	template<typename ...Args>
+	void function_block_helper(std::vector<std::pair<TYPE, std::string_view>> &v, TYPE t, std::string_view s, Args... args_t) {
+		function_block_helper(v, args_t);
+		v.emplace_back(std::make_pair(t, std::move(s)));
+	}
+	template<>
+	void function_block_helper(std::vector<std::pair<TYPE, std::string_view>> &v, TYPE t, std::string_view s) {
+		v.emplace_back(std::make_pair(t, std::move(s)));
+	}
+
+	struct function_block {
+		TYPE return_type;
+		std::string_view name;
+		std::vector<std::pair<TYPE, std::string_view>> parameters;
+		std::shared_ptr<block> block_head;
+
+		function_block() = default;
+		function_block(function_block const&) = delete;
+		function_block(function_block&&) = delete;
+		function_block& operator=(function_block const&) = delete;
+		function_block& operator=(function_block&&) = delete;
+		~function_block() = default;
+
+		template<typename ...Args>
+		void init_var(std::string_view name, TYPE return_t, Args... args_t) {
+			this->name = name;
+			return_type = return_t;
+			function_block_helper(args_t...);
+		}
+
+		void init(std::string_view name, TYPE return_t, std::vector<std::pair<TYPE, std::string_view>> params) {
+			this->name = name;
+			return_type = return_t;
+			parameters = std::move(params);
+		}
+
+		void init_block() {
+			block_head = std::make_shared<block>(1);
+			for (auto& p : parameters) {
+				switch (static_cast<int>(p.first)) {
+				case 0:
+					block_head->initialize_identifier(1, p.second, static_cast<int>(0));
+					break;
+				case 1:
+					block_head->initialize_identifier(1, p.second, static_cast<float>(0));
+					break;
+				case 2:
+					block_head->initialize_identifier(1, p.second, static_cast<int*>(0));
+					break;
+				case 3:
+					block_head->initialize_identifier(1, p.second, static_cast<float*>(0));
+					break;
+				default:
+					throw std::runtime_error("Not possible");
+				}
+			}
 		}
 	};
 }
