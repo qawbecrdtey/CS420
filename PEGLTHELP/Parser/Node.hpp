@@ -7,6 +7,7 @@
 #include <tao/pegtl/contrib/parse_tree.hpp>
 
 #include "Grammar.hpp"
+#include "Block.hpp"
 
 namespace Parser {
 	using namespace std::literals::string_view_literals;
