@@ -300,8 +300,12 @@ namespace Parser {
 			}
 		}
 
-		void compound_statement_dfs(uint64_t level, std::shared_ptr<block>& block_head) {
-            
+		void compound_statement_dfs(uint64_t level, std::shared_ptr<function_block>& function, std::shared_ptr<block>& cur) {
+            for(auto&& p : this->children){
+                if(p->marker == Marker::Curly) {
+                    
+                }
+            }
 		}
 
 		void function_decl_dfs(std::shared_ptr<function_block>& function) {
@@ -378,7 +382,7 @@ namespace Parser {
 			}
 			function->init(fun_id, return_t, params);
 			assert(this->children[1]->marker == Marker::Curly);
-            this->children[1]->compound_statement_dfs(1, function->block_head);
+            this->children[1]->compound_statement_dfs(1, function, function->block_head);
 		}
 
 		void root_dfs() {

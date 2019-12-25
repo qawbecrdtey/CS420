@@ -4,6 +4,7 @@
 #include <cassert>
 #include <map>
 #include <memory>
+#include <set>
 #include <stack>
 #include <stdexcept>
 #include <string>
@@ -97,7 +98,13 @@ namespace Parser {
 	struct block {
 		uint64_t level;
 		identifier_map_stack ims;
-		std::vector<std::shared_ptr<block>> next;
+		std::set<std::string_view> function_parameters;
+		// 0 : next statement (except for if)
+		// 1 : internal statement (for any kind)
+		// 2 : if true statement
+		// 3 : if false statement
+		std::array<std::shared_ptr<block>, 4> next;
+
 
 		explicit block(uint64_t level) : level(level), ims(), next() {}
 		block(block const&) = default;
@@ -120,6 +127,14 @@ namespace Parser {
 			}
 			set_value(ims[id].top(), t);
 		}
+		void add_function_parameters(std::string_view param) {
+		    if(param != ""sv && function_parameters.find(param) == function_parameters.end()) {
+		        throw std::runtime_error("double or more definitions of parameter name.");
+		    }
+		    if(param != ""sv) {
+		        function_parameters.insert(param);
+		    }
+		}
 		void remove_current_level() {
 			assert(level);
 			for (auto& p : ims) {
@@ -134,13 +149,18 @@ namespace Parser {
 
 		// makes a copy of current block.
 		void generate_next_block() {
-			next.emplace_back(std::make_shared<block>(*this));
+			next[0] = std::make_shared<block>(*this);
 		}
-		void connect_next_block(std::shared_ptr<block>& b) {
-			next.emplace_back(b);
+		// true : keep variables, false : do not keep variables
+		void generate_internal_block(bool keep_var) {
+		    if (keep_var) next[1] = std::make_shared<block>(*this);
+		    else next[1] = std::make_shared<block>(1);
 		}
-		void reset_next_block() {
-			next.clear();
+		void generate_true_block() {
+            next[2] = std::make_shared<block>(*this);
+		}
+		void generate_false_block() {
+		    next[3] = std::make_shared<block>(*this);
 		}
 	};
 
@@ -163,10 +183,12 @@ namespace Parser {
 		std::shared_ptr<block> block_head;
 
 		function_block() : return_type(TYPE::_void), name(""sv), parameters(), block_head() {}
-		function_block(function_block const&) = delete;
-		function_block(function_block&&) = delete;
-		function_block& operator=(function_block const&) = delete;
-		function_block& operator=(function_block&&) = delete;
+		function_block(function_block const& fb) : return_type(fb.return_type), name(fb.name), parameters(fb.parameters), block_head(std::make_shared<block>(*fb.block_head)) {}
+		function_block(function_block&& fb) noexcept : return_type(fb.return_type), name(fb.name), parameters(std::move(fb.parameters)), block_head(std::move(fb.block_head)) {}
+		function_block& operator=(function_block fb) {
+		    std::swap(*this, fb);
+		    return *this;
+		}
 		~function_block() = default;
 
 		template<typename ...Args>
