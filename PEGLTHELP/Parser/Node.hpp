@@ -7,7 +7,7 @@
 #include <tao/pegtl/contrib/parse_tree.hpp>
 
 #include "Grammar.hpp"
-#include "Block.hpp"
+//#include "Block.hpp"
 
 namespace Parser {
 	using namespace std::literals::string_view_literals;
@@ -284,7 +284,7 @@ namespace Parser {
 		void failure(Input const& in, States&&...) noexcept {
 			std::cout << "Failed to match:\n" << in.position() << std::endl;
 		}
-		*/
+		
 		void dfs() {
 			if (this->has_content()) std::cout << this->string_view() << std::endl;
 			for (auto&& next : children) {
@@ -396,6 +396,7 @@ namespace Parser {
 				this->children[i]->function_decl_dfs(functions[i]);
 			}
 		}
+		*/
 	};
 
 	template<typename Rule>

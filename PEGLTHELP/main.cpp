@@ -48,17 +48,33 @@ int main(int argc, char* argv[]) {
 
 	/* FILE INPUT END */
 
+	using namespace interpreter;
+
 	std::cout << source << std::endl;
 	tao::pegtl::memory_input in(source, "");
 	try {
 		//Parser::Identifier_map_stack ims;
 		//Parser::Identifier_storage_vector isv;
+		std::map<std::string_view, std::vector<std::pair<TYPE, std::string_view>>> func_param;
 		auto const root = tao::pegtl::parse_tree::parse<Parser::grammar, Parser::node, Parser::selector, tao::pegtl::nothing, Parser::control>(in);
 		if (root) {
 			tao::pegtl::parse_tree::print_dot(std::cout, *root);
-			root->root_dfs();
+			// func_param has function identifiers and its parameters.
+			get_function_return_type_and_identifier_from_root(root, func_param);
+
+			auto const& _main_ = func_param.find("main"sv);
+			if (_main_ == func_param.end()) {
+				throw std::runtime_error("No main function found.");
+			}
+			uint64_t main_idx;
+			if (!find_function_get_statement("main"sv, root, main_idx)) {
+				throw std::runtime_error("No main function found.");
+			}
+
+			auto const& main_root = root->children[main_idx]->children[1];
+
 		}
-		
+		else throw std::runtime_error("Compile error!");
 		//auto b = tao::pegtl::parse<Parser::grammar, Parser::action>(in, ims, isv);
 		//std::cout << (b ? "true" : "false") << std::endl;
 	}
