@@ -1,6 +1,7 @@
 #ifndef Parser_Block_hpp
 #define Parser_Block_hpp
 
+#include <array>
 #include <cassert>
 #include <map>
 #include <memory>
