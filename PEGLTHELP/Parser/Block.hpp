@@ -7,11 +7,12 @@
 #include <stack>
 #include <stdexcept>
 #include <string>
+#include <string_view>
 #include <variant>
 #include <vector>
 
 namespace Parser {
-
+    using namespace std::literals;
 	template<typename T>
 	struct value {
 		T val;
@@ -31,7 +32,7 @@ namespace Parser {
 			if constexpr (std::is_same_v<U, T>) {
 				val = u.val;
 			}
-			else if constexpr (std::is_convertible_v<U, V>) {
+			else if constexpr (std::is_convertible_v<U, T>) {
 				val = static_cast<T>(u.val);
 			}
 			else {
@@ -47,9 +48,6 @@ namespace Parser {
 	template<typename T>
 	void get_value(Value val, T& t) {
 		switch (val.index()) {
-		case 0:
-			t = static_cast<T>(std::get<0>(val).get_value());
-			break;
 		case 1:
 			t = static_cast<T>(std::get<1>(val).get_value());
 			break;
@@ -58,6 +56,9 @@ namespace Parser {
 			break;
 		case 3:
 			t = static_cast<T>(std::get<3>(val).get_value());
+			break;
+		case 4:
+			t = static_cast<T>(std::get<4>(val).get_value());
 			break;
 		default:
 			throw std::bad_variant_access();
@@ -113,7 +114,7 @@ namespace Parser {
 			ims[id].push(Value_level(value<T>(t), level));
 		}
 		template<typename T>
-		bool modify_identifier(std::string id, T t) {
+		bool modify_identifier(std::string const& id, T t) {
 			if (ims.find(id) == ims.end()) {
 				throw std::runtime_error("Identifier not defined.");
 			}
@@ -147,12 +148,12 @@ namespace Parser {
 
 	template<typename ...Args>
 	void function_block_helper(std::vector<std::pair<TYPE, std::string_view>> &v, TYPE t, std::string_view s, Args... args_t) {
-		function_block_helper(v, args_t);
-		v.emplace_back(std::make_pair(t, std::move(s)));
+		function_block_helper(v, args_t...);
+		v.emplace_back(std::make_pair(t, s));
 	}
 	template<>
 	void function_block_helper(std::vector<std::pair<TYPE, std::string_view>> &v, TYPE t, std::string_view s) {
-		v.emplace_back(std::make_pair(t, std::move(s)));
+		v.emplace_back(std::make_pair(t, s));
 	}
 
 	struct function_block {
@@ -161,7 +162,7 @@ namespace Parser {
 		std::vector<std::pair<TYPE, std::string_view>> parameters;
 		std::shared_ptr<block> block_head;
 
-		function_block() = default;
+		function_block() : return_type(TYPE::_void), name(""sv), parameters(), block_head() {}
 		function_block(function_block const&) = delete;
 		function_block(function_block&&) = delete;
 		function_block& operator=(function_block const&) = delete;
@@ -169,15 +170,15 @@ namespace Parser {
 		~function_block() = default;
 
 		template<typename ...Args>
-		void init_var(std::string_view name, TYPE return_t, Args... args_t) {
-			this->name = name;
+		void init_var(std::string_view name_in, TYPE return_t, Args... args_t) {
+			name = name_in;
 			return_type = return_t;
 			function_block_helper(args_t...);
 		}
 
-		void init(std::string_view name, TYPE return_t, std::vector<std::pair<TYPE, std::string_view>> params) {
+		void init(std::string_view name_in, TYPE return_t, std::vector<std::pair<TYPE, std::string_view>> params) {
 			return_type = return_t;
-			this->name = name;
+			this->name = name_in;
 			parameters = std::move(params);
 		}
 
@@ -192,10 +193,10 @@ namespace Parser {
 					block_head->initialize_identifier(1, p.second, static_cast<float>(0));
 					break;
 				case 3:
-					block_head->initialize_identifier(1, p.second, static_cast<int*>(0));
+					block_head->initialize_identifier(1, p.second, static_cast<int*>(nullptr));
 					break;
 				case 4:
-					block_head->initialize_identifier(1, p.second, static_cast<float*>(0));
+					block_head->initialize_identifier(1, p.second, static_cast<float*>(nullptr));
 					break;
 				default:
 					throw std::runtime_error("Not possible");

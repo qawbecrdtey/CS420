@@ -300,57 +300,85 @@ namespace Parser {
 			}
 		}
 
-		void function_decl_dfs(std::shared_ptr<function_block> const& function) {
+		void compound_statement_dfs(uint64_t level, std::shared_ptr<block>& block_head) {
+            
+		}
+
+		void function_decl_dfs(std::shared_ptr<function_block>& function) {
 			TYPE return_t;
 			if (this->marker == Marker::int_keyword) {
 				return_t = TYPE::_int;
-				assert(this->children[0]->marker == Marker::identifier);
+				assert(this->children[0]->children[0]->marker == Marker::identifier);
 			}
 			else if (this->marker == Marker::float_keyword) {
 				return_t = TYPE::_float;
+                assert(this->children[0]->children[0]->marker == Marker::identifier);
 			}
-			else throw std::runtime_error("Not possible.");
+			else if (this->marker == Marker::void_keyword) {
+			    return_t = TYPE::_void;
+                assert(this->children[0]->children[0]->marker == Marker::identifier);
+			}
+			else throw std::runtime_error("Not possible.1");
 			std::string_view fun_id = this->children[0]->children[0]->string_view();
 			std::vector<std::pair<TYPE, std::string_view>> params;
 			for (auto&& p : this->children[0]->children[1]->children) {
 				TYPE t;
 				std::string_view var;
 				if (p->string_view() == "int"sv) {
+				    if (p->children.empty()) {
+                        t = TYPE::_int;
+                        var = ""sv;
+                        params.emplace_back(std::make_pair(t, var));
+                        continue;
+				    }
 					if (p->children[0]->marker == Marker::identifier) {
 						t = TYPE::_int;
 						var = p->children[0]->string_view();
-						assert(p->children[0]->children.size() == 0);
+						assert(p->children[0]->children.empty());
 					}
 					else if (p->children[0]->marker == Marker::star) {
 						if (p->children[0]->children[0]->marker == Marker::identifier) {
 							t = TYPE::_starint;
 							var = p->children[0]->children[0]->string_view();
-							assert(p->children[0]->children[0]->children.size() == 0);
+							assert(p->children[0]->children[0]->children.empty());
 						}
-						else throw std::runtime_error("Not possible.");
+						else throw std::runtime_error("Not possible.2");
 					}
-					else throw std::runtime_error("Not possible.");
+					else throw std::runtime_error("Not possible.3");
 				}
 				else if (p->string_view() == "float"sv) {
+				    if (p->children.empty()) {
+				        t = TYPE::_float;
+				        var = ""sv;
+                        params.emplace_back(std::make_pair(t, var));
+				        continue;
+				    }
 					if (p->children[0]->marker == Marker::identifier) {
 						t = TYPE::_float;
 						var = p->children[0]->string_view();
-						assert(p->children[0]->children.size() == 0);
+						assert(p->children[0]->children.empty());
 					}
 					else if (p->children[0]->marker == Marker::star) {
 						if (p->children[0]->children[0]->marker == Marker::identifier) {
 							t = TYPE::_starfloat;
 							var = p->children[0]->children[0]->string_view();
-							assert(p->children[0]->children[0]->children.size() == 0);
+							assert(p->children[0]->children[0]->children.empty());
 						}
-						else throw std::runtime_error("Not possible.");
+						else throw std::runtime_error("Not possible.4");
 					}
-					else throw std::runtime_error("Not possible.");
+					else throw std::runtime_error("Not possible.5");
 				}
-				else throw std::runtime_error("Not possible.");
+				else if (p->string_view() == "void"sv) {
+				    assert(this->children[0]->children[1]->children.size() == 1);
+                    if (p->children.empty()) continue;
+                    else throw std::runtime_error("Not possible.6");
+				}
+				else throw std::runtime_error("Not possible.7");
 				params.emplace_back(std::make_pair(t, var));
 			}
 			function->init(fun_id, return_t, params);
+			assert(this->children[1]->marker == Marker::Curly);
+            this->children[1]->compound_statement_dfs(1, function->block_head);
 		}
 
 		void root_dfs() {
