@@ -314,7 +314,7 @@ namespace Parser {
 			std::vector<std::pair<TYPE, std::string_view>> params;
 			for (auto&& p : this->children[0]->children[1]->children) {
 				TYPE t;
-				std::string var;
+				std::string_view var;
 				if (p->string_view() == "int"sv) {
 					if (p->children[0]->marker == Marker::identifier) {
 						t = TYPE::_int;
@@ -356,9 +356,11 @@ namespace Parser {
 		void root_dfs() {
 			if (!is_root()) throw std::runtime_error("Not a root!");
 			
-			auto functions = std::vector<std::shared_ptr<function_block>>(this->children.size());
-			
-			for (uint64_t i = 0; i < functions.size(); i++) {
+			std::vector<std::shared_ptr<function_block>> functions;
+			functions.reserve(this->children.size());
+
+			for (uint64_t i = 0; i < this->children.size(); i++) {
+				functions.emplace_back(std::make_shared<function_block>());
 				this->children[i]->function_decl_dfs(functions[i]);
 			}
 		}

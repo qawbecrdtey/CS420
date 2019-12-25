@@ -39,8 +39,10 @@ namespace Parser {
 			}
 		}
 	};
+	template<>
+	struct value<void> {};
 
-	using Value = std::variant<value<int>, value<float>, value<int*>, value<float*>>;
+	using Value = std::variant<value<void>, value<int>, value<float>, value<int*>, value<float*>>;
 
 	template<typename T>
 	void get_value(Value val, T& t) {
@@ -64,9 +66,6 @@ namespace Parser {
 	template<typename T>
 	void set_value(Value val, T& t) {
 		switch (val.index()) {
-		case 0:
-			std::get<0>(val).set_value(t);
-			break;
 		case 1:
 			std::get<1>(val).set_value(t);
 			break;
@@ -75,6 +74,9 @@ namespace Parser {
 			break;
 		case 3:
 			std::get<3>(val).set_value(t);
+			break;
+		case 4:
+			std::get<4>(val).set_value(t);
 			break;
 		default:
 			throw std::bad_variant_access();
@@ -141,7 +143,7 @@ namespace Parser {
 		}
 	};
 
-	enum class TYPE : int { _int, _float, _starint, _starfloat };
+	enum class TYPE : int { _void, _int, _float, _starint, _starfloat };
 
 	template<typename ...Args>
 	void function_block_helper(std::vector<std::pair<TYPE, std::string_view>> &v, TYPE t, std::string_view s, Args... args_t) {
@@ -174,8 +176,8 @@ namespace Parser {
 		}
 
 		void init(std::string_view name, TYPE return_t, std::vector<std::pair<TYPE, std::string_view>> params) {
-			this->name = name;
 			return_type = return_t;
+			this->name = name;
 			parameters = std::move(params);
 		}
 
@@ -183,16 +185,16 @@ namespace Parser {
 			block_head = std::make_shared<block>(1);
 			for (auto& p : parameters) {
 				switch (static_cast<int>(p.first)) {
-				case 0:
+				case 1:
 					block_head->initialize_identifier(1, p.second, static_cast<int>(0));
 					break;
-				case 1:
+				case 2:
 					block_head->initialize_identifier(1, p.second, static_cast<float>(0));
 					break;
-				case 2:
+				case 3:
 					block_head->initialize_identifier(1, p.second, static_cast<int*>(0));
 					break;
-				case 3:
+				case 4:
 					block_head->initialize_identifier(1, p.second, static_cast<float*>(0));
 					break;
 				default:
