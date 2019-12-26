@@ -1,6 +1,7 @@
 #include <exception>
 #include <fstream>
 #include <iostream>
+#include <stack>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -55,7 +56,7 @@ int main(int argc, char* argv[]) {
 	try {
 		//Parser::Identifier_map_stack ims;
 		//Parser::Identifier_storage_vector isv;
-		std::map<std::string_view, std::vector<std::pair<TYPE, std::string_view>>> func_param;
+		std::map<std::string_view, std::pair<TYPE, std::vector<std::pair<TYPE, std::string_view>>>> func_param;
 		auto const root = tao::pegtl::parse_tree::parse<Parser::grammar, Parser::node, Parser::selector, tao::pegtl::nothing, Parser::control>(in);
 		if (root) {
 			tao::pegtl::parse_tree::print_dot(std::cout, *root);
@@ -72,7 +73,7 @@ int main(int argc, char* argv[]) {
 			}
 
 			auto const& main_root = root->children[main_idx]->children[1];
-
+			Identifier_map_type identifier_map;
 		}
 		else throw std::runtime_error("Compile error!");
 		//auto b = tao::pegtl::parse<Parser::grammar, Parser::action>(in, ims, isv);

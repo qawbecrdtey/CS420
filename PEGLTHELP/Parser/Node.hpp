@@ -684,8 +684,8 @@ namespace Parser {
 		static void transform(std::unique_ptr<node>& n) {
 			auto t = std::move(n->children[0]);
 			auto l = std::move(n->children[1]);
+			t->children = std::move(l->children);
 			n = std::move(t);
-			n->children = std::move(l->children);
 		}
 	};
 	template<>
