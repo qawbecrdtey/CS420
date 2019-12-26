@@ -74,6 +74,7 @@ int main(int argc, char* argv[]) {
 
 			auto const& main_root = root->children[main_idx]->children[1];
 			Identifier_map_type identifier_map;
+			run_statement(main_root, identifier_map, 0);
 		}
 		else throw std::runtime_error("Compile error!");
 		//auto b = tao::pegtl::parse<Parser::grammar, Parser::action>(in, ims, isv);

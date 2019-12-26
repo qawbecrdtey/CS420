@@ -118,68 +118,128 @@ namespace interpreter {
 			return starfloat_value{ nullptr };
 		case TYPE::_starint:
 			return starint_value{ nullptr };
+        default:
+            throw std::runtime_error("Not possible.");
 		}
 	}
 
-	template<typename T>
-	Value set_value(TYPE t, T val) {
-		switch (t) {
-		case TYPE::_float:
-			return float_value{ val };
-		case TYPE::_int:
-			return int_value{ val };
-		case TYPE::_starfloat:
-			return starfloat_value{ std::make_unique<float[]>(val) };
-		case TYPE::_starint:
-			return starint_value{ std::make_unique<int[]>(val) };
-		}
+	bool is_zero(Value const& v) {
+	    switch(v.index()) {
+        case 0:
+            return std::get<0>(v).value == 0;
+        case 1:
+            return std::get<1>(v).value == 0.0;
+        case 2:
+            return std::get<2>(v).value == nullptr;
+        case 3:
+            return std::get<3>(v).value == nullptr;
+        default:
+            throw std::runtime_error("Not possible1");
+	    }
 	}
+
+	Value set_value_float(float val) { return float_value{ val }; }
+	Value set_value_int(int val) { return int_value{ val }; }
+	Value set_value_starfloat(int len) { return starfloat_value{ std::make_unique<float[]>(len) }; }
+	Value set_value_starint(int len) { return starint_value{ std::make_unique<int[]>(len) }; }
 
 	Value run_expression(std::unique_ptr<node> const& root, Identifier_map_type& imt) {
-		return int_value{ 42 };
+	    if(root->marker == Marker::Int_number) {
+
+	    }
+
+		if (root->marker == Marker::equal) {
+		    auto&& p = root->children[0];
+		    assert(p->marker == Marker::identifier);
+		    if (imt.find(p->string_view()) == imt.end()) {
+
+		    }
+            if (!p->children.empty()) {
+
+            }
+		}
+		return int_value{0};
 	}
 
 	void run_statement(std::unique_ptr<node> const& root, Identifier_map_type& imt, uint64_t level) {
 		// Compound statement
 		if (root->marker == Marker::Curly) {
 			for (auto&& p : root->children) {
-				run_statement(root, imt, level + 1);
+				run_statement(p, imt, level + 1);
 			}
 		}
+
 		// Declaration
-		if (root->marker == Marker::int_keyword || root->marker == Marker::float_keyword) {
+		else if (root->marker == Marker::int_keyword || root->marker == Marker::float_keyword) {
 			TYPE t;
 			if (root->marker == Marker::int_keyword) t = TYPE::_int;
 			else t = TYPE::_float;
 			for (auto&& p : root->children) {
 				if (p->marker == Marker::equal) {
-					Value v = run_expression(p->children[1], imt);
 					auto sv = p->children[0]->string_view();
 					if (imt.find(sv) != imt.end() && imt[sv].top().second == level) {
 						throw std::runtime_error("Redefinition of identifier.");
 					}
-					imt[sv].push(std::make_pair(v, level));
+					imt[sv].push(std::make_pair(run_expression(p->children[1], imt), level));
 				}
 				else {
-					assert(p->marker == Marker::identifier);
-					Value v;
+					assert(p->marker == Marker::identifier); // By the assignment specification; there will be no pointer definition.
 					if (!p->children.empty()) {
-						if (t == TYPE::_int) t = TYPE::_starint;
-						else t = TYPE::_starfloat;
-						v = set_value(t, std::stoi(p->children[0]->string()));
+					    auto sv = p->string_view();
+                        if (imt.find(sv) != imt.end() && imt[sv].top().second == level) {
+                            throw std::runtime_error("Redefinition of identifier.");
+                        }
+						if (t == TYPE::_int) {
+                            imt[sv].push(std::make_pair(set_value_starint(std::stoi(p->children[0]->string())), level));
+						}
+						else {
+                            imt[sv].push(std::make_pair(set_value_starfloat(std::stoi(p->children[0]->string())), level));
+						}
 					}
 					else {
-						v = initialize_value(t);
+                        auto sv = p->string_view();
+                        if (imt.find(sv) != imt.end() && imt[sv].top().second == level) {
+                            throw std::runtime_error("Redefinition of identifier.");
+                        }
+                        imt[sv].push(std::make_pair(initialize_value(t), level));
 					}
-					auto sv = p->string_view();
-					if (imt.find(sv) != imt.end() && imt[sv].top().second == level) {
-						throw std::runtime_error("Redefinition of identifier.");
-					}
-					imt[sv].push(std::make_pair(v, level));
 				}
 			}
 		}
+
+		// if
+		else if (root->marker == Marker::if_keyword) {
+		    Value v = run_expression(root->children[0], imt);
+            if(!is_zero(v)) {
+                run_statement(root->children[1], imt, level);
+            }
+            if(root->children.size() == 3 && is_zero(v)) {
+                run_statement(root->children[2], imt, level);
+            }
+		}
+
+		// while
+		else if (root->marker == Marker::while_keyword) {
+		    while(true) {
+                if (!is_zero(run_expression(root->children[0], imt))) run_statement(root->children[1], imt, level);
+                else break;
+            }
+		}
+
+		// for
+		else if (root->marker == Marker::for_keyword) {
+            run_statement(root->children[0], imt, level + 1);
+            run_statement(root->children[1], imt, level + 1);
+            if(root->children.size() == 3) {
+                run_statement(root->children[2], imt, level + 1);
+            }
+            else if (root->children.size() == 4) {
+                run_expression(root->children[2], imt);
+                run_statement(root->children[2], imt, level + 1);
+            }
+            else throw std::runtime_error("Not possible; for statement mismatch.");
+		}
 	}
-};
+}
 
 #endif

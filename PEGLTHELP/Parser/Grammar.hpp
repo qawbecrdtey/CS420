@@ -361,8 +361,7 @@ namespace Parser {
                 Declaration
             >,
             space_s,
-            tao::pegtl::opt<Expression, space_s>,
-            semicolon, space_s,
+            Expression_statement, space_s,
             tao::pegtl::opt<Expression, space_s>,
             closeparen, space_s,
             Statement
@@ -374,13 +373,9 @@ namespace Parser {
         > {};
 
         struct Jump_statement : tao::pegtl::seq<
-            tao::pegtl::sor<
-                continue_keyword,
-                break_keyword,
-                tao::pegtl::seq<
-                    return_keyword,
-                    tao::pegtl::opt<spaces, Expression>
-                >
+            tao::pegtl::seq<
+                return_keyword,
+                tao::pegtl::opt<spaces, Expression>
             >,
             space_s,
             tao::pegtl::must<semicolon>

@@ -520,7 +520,7 @@ namespace Parser {
 			else if (n->children.size() == 3) {
 				n = std::move(n->children[1]);
 			}
-			else throw std::exception();
+			else throw std::runtime_error("Hi1");
 		}
 	};
 	template<>
@@ -779,7 +779,13 @@ namespace Parser {
 		}
 	};
 	template<>
-	struct selector<Expression_statement> : std::true_type {};
+	struct selector<Expression_statement> : std::true_type {
+	    static void transform(std::unique_ptr<node>& n) {
+	        if (!n->children.empty()) {
+                n = std::move(n->children[0]);
+	        }
+	    }
+	};
 	template<>
 	struct selector<Selection_statement> : std::true_type {
 		static void transform(std::unique_ptr<node>& n) {
@@ -796,7 +802,7 @@ namespace Parser {
 				fst->children.emplace_back(std::move(fth));
 				fst->children.emplace_back(std::move(sth));
 			}
-			else throw std::exception();
+			else {std::cout << n->children.size() << std::endl; throw std::runtime_error("Hi2");}
 			n = std::move(fst);
 		}
 	};
@@ -812,11 +818,18 @@ namespace Parser {
 	template<>
 	struct selector<For_statement> : std::true_type {
 		static void transform(std::unique_ptr<node>& n) {
+		    auto const l = n->children.size();
 			auto fst = std::move(n->children[0]);
 			fst->children.emplace_back(std::move(n->children[2]));
 			fst->children.emplace_back(std::move(n->children[3]));
-			fst->children.emplace_back(std::move(n->children[4]));
-			fst->children.emplace_back(std::move(n->children[6]));
+            if (l == 7) {
+                fst->children.emplace_back(std::move(n->children[4]));
+                fst->children.emplace_back(std::move(n->children[6]));
+            }
+            else if (l == 6) {
+                fst->children.emplace_back(std::move(n->children[5]));
+            }
+            else throw std::runtime_error("Not possible; for statement mismatch.");
 			n = std::move(fst);
 		}
 	};
