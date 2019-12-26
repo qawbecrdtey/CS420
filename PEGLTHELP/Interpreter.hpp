@@ -12,8 +12,8 @@ namespace interpreter {
 	
 	struct int_value { int value; };
 	struct float_value { float value; };
-	struct starint_value { int* value; };
-	struct starfloat_value { float* value; };
+	struct starint_value { std::unique_ptr<int[]> value; };
+	struct starfloat_value { std::unique_ptr<float[]> value; };
 	using Value = std::variant<int_value, float_value, starint_value, starfloat_value>;
 	// map(identifier -> stack(value, level))
 	using Identifier_map_type = std::map<std::string_view, std::stack<std::pair<Value, uint64_t>>>;
@@ -108,16 +108,45 @@ namespace interpreter {
 		return false;
 	}
 
+	Value initialize_value(TYPE t) {
+		switch (t) {
+		case TYPE::_float:
+			return float_value{ 0.0 };
+		case TYPE::_int:
+			return int_value{ 0 };
+		case TYPE::_starfloat:
+			return starfloat_value{ nullptr };
+		case TYPE::_starint:
+			return starint_value{ nullptr };
+		}
+	}
+
+	template<typename T>
+	Value set_value(TYPE t, T val) {
+		switch (t) {
+		case TYPE::_float:
+			return float_value{ val };
+		case TYPE::_int:
+			return int_value{ val };
+		case TYPE::_starfloat:
+			return starfloat_value{ std::make_unique<float[]>(val) };
+		case TYPE::_starint:
+			return starint_value{ std::make_unique<int[]>(val) };
+		}
+	}
+
 	Value run_expression(std::unique_ptr<node> const& root, Identifier_map_type& imt) {
 		return int_value{ 42 };
 	}
 
 	void run_statement(std::unique_ptr<node> const& root, Identifier_map_type& imt, uint64_t level) {
+		// Compound statement
 		if (root->marker == Marker::Curly) {
 			for (auto&& p : root->children) {
 				run_statement(root, imt, level + 1);
 			}
 		}
+		// Declaration
 		if (root->marker == Marker::int_keyword || root->marker == Marker::float_keyword) {
 			TYPE t;
 			if (root->marker == Marker::int_keyword) t = TYPE::_int;
@@ -125,11 +154,28 @@ namespace interpreter {
 			for (auto&& p : root->children) {
 				if (p->marker == Marker::equal) {
 					Value v = run_expression(p->children[1], imt);
-					imt[p->children[0]->string_view()].push(std::make_pair(v, level));
+					auto sv = p->children[0]->string_view();
+					if (imt.find(sv) != imt.end() && imt[sv].top().second == level) {
+						throw std::runtime_error("Redefinition of identifier.");
+					}
+					imt[sv].push(std::make_pair(v, level));
 				}
 				else {
 					assert(p->marker == Marker::identifier);
-					
+					Value v;
+					if (!p->children.empty()) {
+						if (t == TYPE::_int) t = TYPE::_starint;
+						else t = TYPE::_starfloat;
+						v = set_value(t, std::stoi(p->children[0]->string()));
+					}
+					else {
+						v = initialize_value(t);
+					}
+					auto sv = p->string_view();
+					if (imt.find(sv) != imt.end() && imt[sv].top().second == level) {
+						throw std::runtime_error("Redefinition of identifier.");
+					}
+					imt[sv].push(std::make_pair(v, level));
 				}
 			}
 		}
