@@ -12,8 +12,8 @@ namespace interpreter {
 	
 	struct int_value { int value; };
 	struct float_value { float value; };
-	struct starint_value { std::unique_ptr<int[]> value; };
-	struct starfloat_value { std::unique_ptr<float[]> value; };
+	struct starint_value { int* value; };
+	struct starfloat_value { float* value; };
 	using Value = std::variant<int_value, float_value, starint_value, starfloat_value>;
 	// map(identifier -> stack(value, level))
 	using Identifier_map_type = std::map<std::string_view, std::stack<std::pair<Value, uint64_t>>>;
@@ -134,19 +134,45 @@ namespace interpreter {
         case 3:
             return std::get<3>(v).value == nullptr;
         default:
-            throw std::runtime_error("Not possible1");
+            throw std::runtime_error("Not possible.");
 	    }
 	}
 
 	Value set_value_float(float val) { return float_value{ val }; }
 	Value set_value_int(int val) { return int_value{ val }; }
-	Value set_value_starfloat(int len) { return starfloat_value{ std::make_unique<float[]>(len) }; }
-	Value set_value_starint(int len) { return starint_value{ std::make_unique<int[]>(len) }; }
+	Value set_value_starfloat(int len) { return starfloat_value{ new float[len] }; }
+	Value set_value_starint(int len) { return starint_value{ new int[len] }; }
 
 	Value run_expression(std::unique_ptr<node> const& root, Identifier_map_type& imt) {
+		// int
 	    if(root->marker == Marker::Int_number) {
-
+			return int_value{ std::stoi(root->string()) };
 	    }
+		// float
+		else if (root->marker == Marker::Float_number) {
+			return float_value{ std::stof(root->string()) };
+		}
+		// identifier
+		else if (root->marker == Marker::identifier) {
+			if (imt.find(root->string_view()) == imt.end()) {
+				throw std::runtime_error("Identifier not defined.");
+			}
+			auto&& v = imt[root->string_view()].top().first;
+			switch (v.index()) {
+			case 0:
+				return int_value{ std::get<0>(v).value };
+			case 1:
+				return float_value{ std::get<1>(v).value };
+			case 2:
+				return starint_value{ std::get<2>(v).value };
+			case 3:
+				return starfloat_value{ std::get<3>(v).value };
+			default:
+				throw std::runtime_error("Not possible.");
+			}
+		}
+
+
 
 		if (root->marker == Marker::equal) {
 		    auto&& p = root->children[0];
