@@ -15,7 +15,8 @@ namespace interpreter {
 	struct starint_value { int* value; };
 	struct starfloat_value { float* value; };
 	using Value = std::variant<int_value, float_value, starint_value, starfloat_value>;
-	using Identifier_map_type = std::map<std::string_view, std::stack<Value>>;
+	// map(identifier -> stack(value, level))
+	using Identifier_map_type = std::map<std::string_view, std::stack<std::pair<Value, uint64_t>>>;
 
 	void get_function_return_type_and_identifier_from_root(std::unique_ptr<node> const& root, std::map<std::string_view, std::pair<TYPE, std::vector<std::pair<TYPE, std::string_view>>>>& func_param) {
 		for (auto&& p : root->children) {
@@ -124,7 +125,7 @@ namespace interpreter {
 			for (auto&& p : root->children) {
 				if (p->marker == Marker::equal) {
 					Value v = run_expression(p->children[1], imt);
-					imt[p->children[0]->string_view()].push(v);
+					imt[p->children[0]->string_view()].push(std::make_pair(v, level));
 				}
 				else {
 					assert(p->marker == Marker::identifier);

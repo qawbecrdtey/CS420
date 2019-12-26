@@ -109,7 +109,6 @@ namespace Parser {
 		static std::unique_ptr<node> brack_node(std::unique_ptr<node> const& n) {
 			if (n->children[0]->marker == Marker::openbrack && n->children.back()->marker == Marker::closebrack) {
 				std::unique_ptr<node> p = std::make_unique<node>(Marker::Brack);
-				p->children = std::move(n->children);
 				p->m_begin = std::move(n->m_begin);
 				p->m_end = std::move(n->m_end);
 				auto const l = n->children.size();
@@ -496,6 +495,22 @@ namespace Parser {
 	template<>
 	struct selector<Float_number> : std::true_type {};
 
+	/*
+		Primary_expression
+				|				-->		Identifier
+			Identifier
+
+
+		Primary_expression
+				|				-->		Constant
+			Constant
+
+
+				Primary_expression
+		  /				|			  \			--> Expression
+		openparen   Expression	  closeparen
+	*/
+
 	template<>
 	struct selector<Primary_expression> : std::true_type {
 		static void transform(std::unique_ptr<node>& n) {
@@ -723,7 +738,11 @@ namespace Parser {
 				n = std::move(n->children[0]);
 				return;
 			}
-
+			if (n->children[1]->marker == Marker::Brack) {
+				n->children[0]->children.emplace_back(std::move(n->children[1]->children[0]));
+				n = std::move(n->children[0]);
+				return;
+			}
 		}
 	};
 	template<>
