@@ -19,3 +19,6 @@ is the previous(not used for the assignment) version of the final assignment.
 1. Clone `https://github.com/qawbecrdtey/CS420.git`.
 2. In each folder, `mkdir build`. In addition, clone `https://github.com/taocpp/PEGTL.git` in PEGTLHELP.
 3. In `*/build`, `cmake ..`.
+
+
+It would be nice if there are some feedbacks and pull requests for this project in the future!
