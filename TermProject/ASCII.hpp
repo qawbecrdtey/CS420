@@ -14,4 +14,8 @@ ASCII determine_char(char c) {
 	return ASCII::Printable;
 }
 
+bool is_identifier_first(char c) { return ('A' <= c && c <= 'Z') || ('a' <= c && c <= 'z') || c == '_'; }
+bool is_number(char c) { return '0' <= c && c <= '9'; }
+bool is_identifier_middle(char c) { return is_identifier_first(c) || is_number(c); }
+
 #endif
