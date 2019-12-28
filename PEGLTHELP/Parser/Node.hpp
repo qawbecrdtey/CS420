@@ -520,7 +520,7 @@ namespace Parser {
 			else if (n->children.size() == 3) {
 				n = std::move(n->children[1]);
 			}
-			else throw std::runtime_error("Hi1");
+			else throw std::runtime_error("Not possible.");
 		}
 	};
 	template<>
@@ -549,13 +549,10 @@ namespace Parser {
 	template<>
 	struct selector<Unary_expression> : std::true_type {
 		static void transform(std::unique_ptr<node>& n) {
-			if (n->children.size() == 1) {
-				n = std::move(n->children[0]);
-				return;
+			for (uint64_t i = 1; i < n->children.size(); i++) {
+				n->children[i - 1]->children.emplace_back(std::move(n->children[i]));
 			}
-			auto u = std::move(n->children[0]);
-			u->children.emplace_back(std::move(n->children[1]));
-			n = std::move(u);
+			n = std::move(n->children[0]);
 		}
 	};
 	template<>

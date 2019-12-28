@@ -56,7 +56,7 @@ int main(int argc, char* argv[]) {
 	try {
 		//Parser::Identifier_map_stack ims;
 		//Parser::Identifier_storage_vector isv;
-		std::map<std::string_view, std::pair<TYPE, std::vector<std::pair<TYPE, std::string_view>>>> func_param;
+		func_param_type func_param;
 		auto const root = tao::pegtl::parse_tree::parse<Parser::grammar, Parser::node, Parser::selector, tao::pegtl::nothing, Parser::control>(in);
 		if (root) {
 			tao::pegtl::parse_tree::print_dot(std::cout, *root);
@@ -74,7 +74,7 @@ int main(int argc, char* argv[]) {
 
 			auto const& main_root = root->children[main_idx]->children[1];
 			Identifier_map_type identifier_map;
-			run_statement(main_root, identifier_map, 0);
+			run_statement(main_root, identifier_map, func_param, 0);
 		}
 		else throw std::runtime_error("Compile error!");
 		//auto b = tao::pegtl::parse<Parser::grammar, Parser::action>(in, ims, isv);
@@ -84,8 +84,8 @@ int main(int argc, char* argv[]) {
 		const auto p = e.positions.front();
 		std::cout << e.what() << std::endl << in.line_at(p) << std::endl;
 		std::cout << std::string(p.byte_in_line, ' ') << '^' << std::endl;
-	}
+	}/*
 	catch (std::exception& e) {
 		std::cout << e.what() << std::endl;
-	}
+	}*/
 }
